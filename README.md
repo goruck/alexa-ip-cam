@@ -19,8 +19,8 @@ The system consists of the following main componenets.
 1. An Alexa Smart Home skill.
 2. A AWS Lambda instance for handling the skill intents including camera discovery and control.
 3. An Alexa-enabled device with a display such as Amazon Echo Show or Spot.
-3. A RTSP proxy running on the local linux machine that aggregates the streams from the cameras on the LAN into one uri. This component isn't needed if you only have one camera. I used The [LIVE555 Proxy Server](http://www.live555.com/proxyServer/).
-4. A TLS encryption proxy on the local linux machine that encypts the feed from the proxy server and streams it on port 443. I used [stunnel](https://www.stunnel.org/index.html).
+3. A RTSP proxy running on the local linux machine that aggregates the streams from the cameras on the LAN into one front-end stream. This component isn't needed if you only have one camera. I used The [LIVE555 Proxy Server](http://www.live555.com/proxyServer/).
+4. A TLS encryption proxy on the local linux machine that encypts the stream from the RTSP proxy server and streams it on local machine's port 443. I used [stunnel](https://www.stunnel.org/index.html).
 
 ## Prerequisites
 
