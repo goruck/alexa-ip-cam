@@ -1,6 +1,8 @@
-#alexa-ip-cam
+# alexa-ip-cam
 
-##Background
+Use Alexa's Smart Home Skill API with standalone IP cameras without needing cloud service.
+
+## Background
 
 Many people like myself have IP cameras without a cloud service that they'd like to control using Amazon's Alexa [Smart Home Skill API](https://developer.amazon.com/docs/smarthome/understand-the-smart-home-skill-api.html). The Smart Home Skill API is great but assumes you are using a cloud service for your cameras and has very specific security and streaming requirements which proves to be challenging to connect cameras in this way. In my case I have several [Axis IP cameras](https://www.axis.com/us/en/products/network-cameras) around the house connected via my LAN to a local Linux server running the [Zoneminder](https://zoneminder.com/) NVR software which records the streams and provides event detection. Therefore I started this project to allow me to view camera streams on Amazon devices such as the Echo Show, the Echo Spot and the FireTV and to do that I had to develop an Alexa Smart Home skill. 
 
@@ -10,7 +12,7 @@ Future work on this project will include extending Alexa control to Zoneminder.
 
 I hope others find this useful. I've outlined the steps below that I used to create this skill.
 
-##System Architecture
+## System Architecture
 
 The system consists of the following main componenets.
 
@@ -20,7 +22,7 @@ The system consists of the following main componenets.
 3. A RTSP proxy running on the local linux machine that aggregates the streams from the cameras on the LAN into one uri. This component isn't needed if you only have one camera. I used The [LIVE555 Proxy Server](http://www.live555.com/proxyServer/).
 4. A TLS encryption proxy on the local linux machine that encypts the feed from the proxy server and streams it on port 443. I used [stunnel](https://www.stunnel.org/index.html).
 
-##Prerequisites
+## Prerequisites
 
 You'll need the following setup before starting this project. 
 
@@ -29,34 +31,34 @@ You'll need the following setup before starting this project.
 3. IP camera(s) that support ONVIF and connected to your LAN.
 4. A Linux machine connected to your LAN. I used an existing server running Debain Jessie but a Raspberry Pi, for example, would be fine.
 
-##Setup the Alexa Smart Home Skill and and Lambda handler
+## Setup the Alexa Smart Home Skill and and Lambda handler
 
 The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarthome/steps-to-build-a-smart-home-skill.html) and [Build Smart Home Camera Skills](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html) on the Amazon Alexa Developers site give detailed instructions on how to create the skill and how the API works. Replace the Lambda code in the template example with the code in this repo. The code emulates the camera configuration data that would normally come from a 3rd party camera cloud service. You'll have to edit camera.js to make it reflect your camera names and specs.
 
-##Setup the RTSP Proxy
+## Setup the RTSP Proxy
 
 [emtunc's blog](https://emtunc.org/blog/) provides excellent [instrutions](https://emtunc.org/blog/02/2016/setting-rtsp-relay-live555-proxy/) on how to setup the proxy from Live555. I needed to set OutPacketBuffer::maxSize to 400000 bytes in live555ProxyServer.cpp to stop the feed from getting truncated. I didn't make the other changes that emtunc made (port and stream naming). The proxy-start script is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
 
-##Setup DNS and SSL certs
+## Setup DNS and SSL certs
 
 I followed the corresponding steps in [CameraPi](https://github.com/sammachin/camerapi) almost exactly except I'm using GoDaddy to manage domains and DNS of AWS Route 53. Note: Let’s Encrypt CA issues short-lived certificates (90 days). Make sure you [renew the certificates](https://certbot.eff.org/docs/using.html#renewing-certificates) at least once in 3 months.
 
 Per the Alexa Smart Home camera [documentation](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html#local-and-remote-execution-recommendations) you can provide the API a local or remote camera URI. I'm currently providing a local URI but did try remote as well since I was a little concerned about putting a private IP address in a DNS record. But local results in lower latency over remote but its not a lot, only about 500 ms and I didn't have to open a port to the Internet in my firewall. The biggest drawback is that I won't be able to view my cameras on an Echo device outside my home, for example at work. 
 
-##Setup the TLS encryption proxy
+## Setup the TLS encryption proxy
 
 stunnel is a debian package so it easy to install using apt-get as root. The configuration I used is in the file stunnel.conf which is placed in /etc/stunnel/stunnel.conf. stunnel is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
 
-##Setup Camera ONVIF
+## Setup Camera ONVIF
 
 I created an ONVIF user for Alexa access and a profile for each camera. The settings for the profile are shown in the figure below.
 
 ![Alt text](/images/onvif-profile.jpg?raw=true "AXIS camera onvif profile for Alexa.")
 
-##Operation
+## Operation
 
 Once everything is setup you need to enable your skill in the Alexa companion mobile app or web app. Then ask Alexa to "discover devices" and your camera(s) should be found, Alexa will tell you that and they'll be visible in the app. After that just ask Alexa to "show front porch camera" (or what every you named them) and the camera video will be streamed to your Echo device with a screen. 
 
-##Results
+## Results
 
 Overall the skill works well but the latency between asking Alexa to show a camera and the video appearing on the Echo's or FireTV screen is a little too long for a great expereince, on average 5 secs or so. I haven't yet tracked down the cause of it. Also I've seen the video re-buffer occasionally which can be irritating and once in a great while the video freezes during rebuffering. Again, I'll track this down and optimize. 
