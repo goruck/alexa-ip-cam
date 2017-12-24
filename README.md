@@ -37,7 +37,7 @@ The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarth
 
 ## Setup the RTSP Proxy
 
-[emtunc's blog](https://emtunc.org/blog/) provides excellent [instrutions](https://emtunc.org/blog/02/2016/setting-rtsp-relay-live555-proxy/) on how to setup the proxy from Live555. I needed to set OutPacketBuffer::maxSize to 400000 bytes in live555ProxyServer.cpp to stop the feed from getting truncated. I didn't make the other changes that emtunc made (port and stream naming). The proxy-start script is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
+[emtunc's blog](https://emtunc.org/blog/) provides excellent [instructions](https://emtunc.org/blog/02/2016/setting-rtsp-relay-live555-proxy/) on how to setup the proxy from Live555. I needed to set OutPacketBuffer::maxSize to 400000 bytes in live555ProxyServer.cpp to stop the feed from getting truncated. I didn't make the other changes that emtunc made (port and stream naming). The proxy-start script is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
 
 ## Setup DNS and SSL certs
 
