@@ -53,6 +53,15 @@
       "description": "Front Gate Camera",
       "resolutions": [{"width":1080, "height":1920}],
       "uri": "rtsp://cam.lsacam.com:443/proxyStream-6"
+    },
+    {
+      "endpointId": "7",
+      "manufacturerName": "Axis",
+      "modelName": "P1435-LE",
+      "friendlyName": "Back Porch Camera",
+      "description": "Back Porch Camera",
+      "resolutions": [{"width":666, "height":375}],
+      "uri": "rtsp://cam.lsacam.com:443/proxyStream-7"
     }
   ]
 }
