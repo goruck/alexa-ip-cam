@@ -41,7 +41,7 @@ The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarth
 
 ## Setup DNS and SSL certs
 
-I followed the corresponding steps in [CameraPi](https://github.com/sammachin/camerapi) almost exactly except I'm using GoDaddy to manage domains and DNS of AWS Route 53. Note: Let’s Encrypt CA issues short-lived certificates (90 days). Make sure you [renew the certificates](https://certbot.eff.org/docs/using.html#renewing-certificates) at least once in 3 months.
+I followed the corresponding steps in [CameraPi](https://github.com/sammachin/camerapi) almost exactly except I'm using GoDaddy to manage domains and DNS instead of AWS Route 53. Note: Let’s Encrypt CA issues short-lived certificates (90 days). Make sure you [renew the certificates](https://certbot.eff.org/docs/using.html#renewing-certificates) at least once in 3 months.
 
 Per the Alexa Smart Home camera [documentation](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html#local-and-remote-execution-recommendations) you can provide the API a local or remote camera URI. I'm currently providing a local URI but did try remote as well since I was a little concerned about putting a private IP address in a DNS record. But local results in lower latency over remote but its not a lot, only about 500 ms and I didn't have to open a port to the Internet in my firewall. The biggest drawback is that I won't be able to view my cameras on an Echo device outside my home, for example at work. 
 
