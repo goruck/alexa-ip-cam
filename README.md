@@ -8,7 +8,7 @@ Many people like myself have IP cameras without a cloud service that they'd like
 
 I looked for other projects on GitHub for code to leverage but didn't find anything exactly solving my particular problem. However I did find an excellent repo called [CameraPi](https://github.com/sammachin/camerapi) from [Sam Machin](https://github.com/sammachin) that describes how to use Alexa to control a camera connected to a Raspberry PI that I used as a basis for my effort. Thank you Sam!
 
-Future work on this project will include extending Alexa control to Zoneminder.
+Note: Please see [smart-zoneminder](https://github.com/goruck/smart-zoneminder) for a related project that enables fast upload of [ZoneMinder](https://www.zoneminder.com/) alarm frame images to an S3 archive where they are analyzed by Amazon Rekognition and made accessible by voice via Alexa.
 
 I hope others find this useful. I've outlined the steps below that I used to create this skill.
 
