@@ -1,3 +1,4 @@
 info/
 vars.sh
 lambda/index.zip
+.eslintrc.json

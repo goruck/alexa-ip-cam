@@ -2,7 +2,7 @@
 
 /**
  * Discover and show cameras on a local network without a cloud service.
- * Copywrite (c) Lindo St. Angel 2017.
+ * Copyright (c) Lindo St. Angel 2018.
  * 
  * This demonstrates a smart home skill using the publicly available API on Amazon's Alexa platform.
  * For more information about developing smart home skills, see
@@ -72,7 +72,7 @@ function generateResponse(name, payload) {
 
 function getDevicesFromPartnerCloud() {
     // Read and parse json containing camera configuration.
-    // This is not acutally from the cloud, rather emulates it. 
+    // This is not actually from the cloud, rather emulates it. 
     const fs = require('fs');
     const camerasJSON = fs.readFileSync('./cameras.json');
     const camerasObj = safelyParseJSON(camerasJSON);
@@ -182,7 +182,14 @@ function handleDiscovery(request, callback) {
                        videoCodecs: ['H264'],
                        audioCodecs: ['G711'] 
                   }]
-              }]
+              },
+              {
+                "type": "AlexaInterface",
+                "interface": "Alexa.MediaMetadata",
+                "version": "3",
+                "proactivelyReported": true
+              }
+            ]
         }
         endpoints.push(endpoint);
     }
@@ -309,6 +316,25 @@ function handleControl(request, callback) {
     callback(null, response);
 }
 
+function handleAcceptGrant (request, callback) {
+    log('DEBUG', `Accept Grant: ${JSON.stringify(request)}`);
+
+    const response = {
+        "event": {
+          "header": {
+            "messageId": generateMessageID(),
+            "namespace": "Alexa.Authorization",
+            "name": "AcceptGrant.Response",
+            "payloadVersion": "3"
+          },
+          "payload": {
+          }
+        }
+    }
+
+    callback(null, response);
+}
+
 /**
  * Main entry point.
  * Incoming events from Alexa service through Smart Home API are all handled by this function.
@@ -336,6 +362,13 @@ exports.handler = (request, context, callback) => {
          */
         case 'Alexa.CameraStreamController':
             handleControl(request, callback);
+            break;
+
+        /**
+         * Accept Grant.
+         */
+        case 'Alexa.Authorization':
+            handleAcceptGrant(request, callback);
             break;
 
         /**
