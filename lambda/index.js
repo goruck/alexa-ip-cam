@@ -178,9 +178,9 @@ function handleDiscovery(request, callback) {
                   {
                        protocols: ['RTSP'], 
                        resolutions: _resolutions,
-                       authorizationTypes: ['BASIC'], 
+                       authorizationTypes: ['NONE'], 
                        videoCodecs: ['H264'],
-                       audioCodecs: ['G711'] 
+                       audioCodecs: ['NONE'] 
                   }]
               },
               {
@@ -330,7 +330,17 @@ function handleAcceptGrant (request, callback) {
           "payload": {
           }
         }
-    }
+    };
+
+    callback(null, response);
+}
+
+function handleGetMediaMetadata (request, callback) {
+    log('DEBUG', `GetMediaMetadata: ${JSON.stringify(request)}`);
+
+    const response = {
+        // todo
+    };
 
     callback(null, response);
 }
@@ -369,6 +379,13 @@ exports.handler = (request, context, callback) => {
          */
         case 'Alexa.Authorization':
             handleAcceptGrant(request, callback);
+            break;
+
+        /**
+         * GetMediaMetadata.
+         */
+        case 'Alexa.GetMediaMetadata':
+            handleGetMediaMetadata(request, callback);
             break;
 
         /**
