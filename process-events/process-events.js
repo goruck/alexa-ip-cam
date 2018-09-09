@@ -215,83 +215,88 @@ watcher
         //const dirName = fsPath.dirname(path);
 
         if (extName === '.xml') {
+            let mediaId = '';
+            let startTime = '';
+            let stopTime = '';
             readFilePromise(path).then(res => {
                 return parseStringPromise(res);
             }).then(res => {
                 log.debug(`xml parse res: ${util.inspect(res, {showHidden: false, depth: null})}`);
 
-                // Check for video clip from camera.
+                // Check for recording from camera.
                 if (res.hasOwnProperty('RecordingBlock') && (res.RecordingBlock.Status[0] === 'Complete')) {
                     //
-                    const mediaId = res.RecordingBlock.RecordingToken[0];
+                    mediaId = res.RecordingBlock.RecordingToken[0];
                     // Remove msecs from datetimes.
-                    const startTime = res.RecordingBlock.StartTime[0].split('.')[0]+'Z';
-                    const stopTime = res.RecordingBlock.StopTime[0].split('.')[0]+'Z';
+                    startTime = res.RecordingBlock.StartTime[0].split('.')[0]+'Z';
+                    stopTime = res.RecordingBlock.StopTime[0].split('.')[0]+'Z';
+                
+                    return getAccessToken();
+                } else {
+                    // TODO: Using reject to exit the chain early - there's probably a cleaner way.
+                    return Promise.reject('No recording found.');
+                }
+            }).then(res => {
+                const accessToken = res;
+                const msgID = uuidv4();
+                // Get time ten minutes from now.
+                let tenMinsFromNow = new Date();
+                tenMinsFromNow.setMinutes(tenMinsFromNow.getMinutes() + 10);
 
-                    getAccessToken().then(res => {
-                        const accessToken = res;
-                        const msgID = uuidv4();
-                        // Get time ten minutes from now.
-                        let tenMinsFromNow = new Date();
-                        tenMinsFromNow.setMinutes(tenMinsFromNow.getMinutes() + 10);
-
-                        const postData = {
-                            'event': {
-                                'header': {
-                                    'namespace': 'Alexa.MediaMetadata',
-                                    'name': 'MediaCreatedOrUpdated',
-                                    'messageId': msgID,
-                                    'payloadVersion': '3'
-                                },
-                                'endpoint': {
-                                    'scope': {
-                                        'type': 'BearerToken',
-                                        'token': accessToken
+                const postData = {
+                    'event': {
+                        'header': {
+                            'namespace': 'Alexa.MediaMetadata',
+                            'name': 'MediaCreatedOrUpdated',
+                            'messageId': msgID,
+                            'payloadVersion': '3'
+                        },
+                        'endpoint': {
+                            'scope': {
+                                'type': 'BearerToken',
+                                'token': accessToken
+                            },
+                            'endpointId': '1'
+                        },
+                        'payload': {
+                            'media': {
+                                'id': mediaId,
+                                'cause': 'MOTION_DETECTED',
+                                'recording': {
+                                    'name': 'Front Porch Camera',
+                                    'startTime': startTime,
+                                    'endTime': stopTime,
+                                    'videoCodec': 'H264',
+                                    'audioCodec': 'NONE',
+                                    'uri': {
+                                        'value': 'https://lindo.loginto.me:60945/public/alarm-video.mp4',
+                                        //'value': 'https://s3-us-west-2.amazonaws.com/alexa-ip-cam-test/alarm-video.mp4',
+                                        'expireTime': tenMinsFromNow.toISOString().split('.')[0]+'Z'
                                     },
-                                    'endpointId': '1'
-                                },
-                                'payload': {
-                                    'media': {
-                                        'id': mediaId,
-                                        'cause': 'MOTION_DETECTED',
-                                        'recording': {
-                                            'name': 'Front Porch Camera',
-                                            'startTime': startTime,
-                                            'endTime': stopTime,
-                                            'videoCodec': 'H264',
-                                            'audioCodec': 'NONE',
-                                            'uri': {
-                                                'value': 'https://lindo.loginto.me:60945/public/alarm-video.mp4',
-                                                //'value': 'https://s3-us-west-2.amazonaws.com/alexa-ip-cam-test/alarm-video.mp4',
-                                                'expireTime': tenMinsFromNow.toISOString().split('.')[0]+'Z'
-                                            },
-                                            'thumbnailUri': {
-                                                'value': 'https://78.media.tumblr.com/70e7a471dec5e0c3e6807242bf838fd0/tumblr_muj26tUeaP1qj3dtso1_500.png',
-                                                'expireTime': tenMinsFromNow.toISOString().split('.')[0]+'Z'
-                                            }
-                                        }
+                                    'thumbnailUri': {
+                                        'value': 'https://78.media.tumblr.com/70e7a471dec5e0c3e6807242bf838fd0/tumblr_muj26tUeaP1qj3dtso1_500.png',
+                                        'expireTime': tenMinsFromNow.toISOString().split('.')[0]+'Z'
                                     }
                                 }
                             }
-                        };
+                        }
+                    }
+                };
 
-                        log.debug(`post data: ${util.inspect(postData, {showHidden: false, depth: null})}`);
+                log.debug(`post data: ${util.inspect(postData, {showHidden: false, depth: null})}`);
 
-                        const alexaHeaders = {
-                            'Authorization': 'Bearer ' + accessToken,
-                            'Content-Type': 'application/json;charset=UTF-8'
-                        };
+                const alexaHeaders = {
+                    'Authorization': 'Bearer ' + accessToken,
+                    'Content-Type': 'application/json;charset=UTF-8'
+                };
 
-                        return httpsPost(EVENT_GATEWAY_HOST, EVENT_GATEWAY_PATH, alexaHeaders, JSON.stringify(postData));
-                    }).then((res) => {
-                        log.info(`Posted ${mediaId} to Alexa Event Gateway.`);
-                        log.debug(`Gateway POST result: ${util.inspect(res, {showHidden: false, depth: null})}`);
-                    }).catch((err) => {
-                        log.error(`Gateway POST error: ${util.inspect(err, {showHidden: false, depth: null})}`);
-                    });
-                }
+                return httpsPost(EVENT_GATEWAY_HOST, EVENT_GATEWAY_PATH, alexaHeaders, JSON.stringify(postData));
+            }).then(res => {
+                log.info(`Posted ${mediaId} to Alexa Event Gateway.`);
+                log.debug(`Gateway POST result: ${util.inspect(res, {showHidden: false, depth: null})}`);
             }).catch(err => {
-                log.error(`Parse error: ${err}`);
+                if (err === 'No recording found.') log.debug(err);
+                else log.error(`Gateway POST error: ${util.inspect(err, {showHidden: false, depth: null})}`);
             });
         }
     })
