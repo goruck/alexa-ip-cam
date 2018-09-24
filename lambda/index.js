@@ -149,7 +149,7 @@ function handleDiscovery(request, callback) {
         name: 'Discover.Response',
         namespace: 'Alexa.Discovery',
         payloadVersion: '3'
-    }
+    };
 
     const camerasObj = getDevicesFromPartnerCloud();
 
@@ -158,39 +158,39 @@ function handleDiscovery(request, callback) {
         let _resolutions = [];
         for (let j = 0, len = camerasObj.cameras[i].resolutions.length; j < len; j++) {
             _resolutions.push({'width': camerasObj.cameras[i].resolutions[j].width,
-                               'height': camerasObj.cameras[i].resolutions[j].height});
+                'height': camerasObj.cameras[i].resolutions[j].height});
         }
 
         const endpoint = {
-              endpointId: camerasObj.cameras[i].endpointId,
-              manufacturerName: camerasObj.cameras[i].manufacturerName,
-              modelName: camerasObj.cameras[i].modelName,
-              friendlyName: camerasObj.cameras[i].friendlyName,
-              description: camerasObj.cameras[i].description,
-              displayCategories: ['CAMERA'],
-              cookie: {},
-              capabilities: [
-              {
-                  type: 'AlexaInterface',
-                  interface: 'Alexa.CameraStreamController',
-                  version: '3',
-                  cameraStreamConfigurations : [
-                  {
-                       protocols: ['RTSP'], 
-                       resolutions: _resolutions,
-                       authorizationTypes: ['NONE'], 
-                       videoCodecs: ['H264'],
-                       audioCodecs: ['NONE'] 
-                  }]
-              },
-              {
-                "type": "AlexaInterface",
-                "interface": "Alexa.MediaMetadata",
-                "version": "3",
-                "proactivelyReported": true
-              }
+            endpointId: camerasObj.cameras[i].endpointId,
+            manufacturerName: camerasObj.cameras[i].manufacturerName,
+            modelName: camerasObj.cameras[i].modelName,
+            friendlyName: camerasObj.cameras[i].friendlyName,
+            description: camerasObj.cameras[i].description,
+            displayCategories: ['CAMERA'],
+            cookie: {},
+            capabilities: [
+                {
+                    type: 'AlexaInterface',
+                    interface: 'Alexa.CameraStreamController',
+                    version: '3',
+                    cameraStreamConfigurations : [
+                        {
+                            protocols: ['RTSP'], 
+                            resolutions: _resolutions,
+                            authorizationTypes: ['NONE'], 
+                            videoCodecs: ['H264'],
+                            audioCodecs: ['NONE'] 
+                        }]
+                },
+                {
+                    'type': 'AlexaInterface',
+                    'interface': 'Alexa.MediaMetadata',
+                    'version': '3',
+                    'proactivelyReported': true
+                }
             ]
-        }
+        };
         endpoints.push(endpoint);
     }
 
@@ -287,7 +287,7 @@ function handleControl(request, callback) {
         name: 'Response',
         namespace: 'Alexa.CameraStreamController',
         payloadVersion: '3'
-    }
+    };
 
     // Get uri of camera using applianceId as an index. 
     const fs = require('fs');
@@ -298,11 +298,11 @@ function handleControl(request, callback) {
     
     const payload = {
         cameraStreams: [
-        {
-            uri: _uri,
-            resolution: {'width': _width, 'height': _height}
-        }]
-    }
+            {
+                uri: _uri,
+                resolution: {'width': _width, 'height': _height}
+            }]
+    };
 
     const response = {
         event: {
@@ -320,26 +320,60 @@ function handleAcceptGrant (request, callback) {
     log('DEBUG', `Accept Grant: ${JSON.stringify(request)}`);
 
     const response = {
-        "event": {
-          "header": {
-            "messageId": generateMessageID(),
-            "namespace": "Alexa.Authorization",
-            "name": "AcceptGrant.Response",
-            "payloadVersion": "3"
-          },
-          "payload": {
-          }
+        'event': {
+            'header': {
+                'messageId': generateMessageID(),
+                'namespace': 'Alexa.Authorization',
+                'name': 'AcceptGrant.Response',
+                'payloadVersion': '3'
+            },
+            'payload': {
+            }
         }
     };
 
     callback(null, response);
 }
 
-function handleGetMediaMetadata (request, callback) {
-    log('DEBUG', `GetMediaMetadata: ${JSON.stringify(request)}`);
+function handleMediaMetadata (request, callback) {
+    log('DEBUG', `MediaMetadata: ${JSON.stringify(request)}`);
+
+    const mediaId = request.directive.payload.filters.mediaIds[0];
+    const mediaIdArr = mediaId.split('__');
+    const mediaUri = 'https://cam.lsacam.com:9443/nvr/camera-share/axis-ACCC8E5E7513/'+mediaIdArr.join('/')+'.mp4';
+    log('DEBUG', `mediaUri: ${mediaUri}`);
 
     const response = {
-        // todo
+        'event': {
+            'header': {
+                'namespace': 'Alexa.MediaMetadata',
+                'name': 'GetMediaMetadata.Response',
+                'messageId': generateMessageID(),
+                'correlationToken': request.directive.header.correlationToken,
+                'payloadVersion': '3'
+            },
+            'payload': {
+                'media': [{
+                    'id': request.directive.payload.filters.mediaIds[0],
+                    'cause': 'MOTION_DETECTED',
+                    'recording': {
+                        'name': 'Optional video name',
+                        'startTime': '2018-06-29T19:20:41Z',
+                        'endTime': '2018-06-29T19:21:41Z',
+                        'videoCodec': 'H264',
+                        'audioCodec': 'NONE',
+                        'uri': {
+                            'value': mediaUri,
+                            'expireTime': '2019-06-29T19:31:41Z'
+                        }
+                    }
+                }]
+                /*'errors': [{
+                    'mediaId': 'media id from the request',
+                    'status': 'reason for error'
+                }]*/
+            }
+        }
     };
 
     callback(null, response);
@@ -354,39 +388,39 @@ function handleGetMediaMetadata (request, callback) {
  */
 exports.handler = (request, context, callback) => {
     switch (request.directive.header.namespace) {
-        /**
+    /**
          * The namespace of 'Alexa.ConnectedHome.Discovery' indicates a request is being made to the Lambda for
          * discovering all appliances associated with the customer's appliance cloud account.
          *
          * For more information on device discovery, please see
          *  https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference#discovery-messages
          */
-        case 'Alexa.Discovery':
-            handleDiscovery(request, callback);
-            break;
+    case 'Alexa.Discovery':
+        handleDiscovery(request, callback);
+        break;
 
         /**
          * The namespace of "Alexa.CameraStreamController" indicates a request is being made to initialize a camera stream for an endpoint.
          * The full list of Control events sent to your lambda are described below.
          *  https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference#payload
          */
-        case 'Alexa.CameraStreamController':
-            handleControl(request, callback);
-            break;
+    case 'Alexa.CameraStreamController':
+        handleControl(request, callback);
+        break;
 
         /**
          * Accept Grant.
          */
-        case 'Alexa.Authorization':
-            handleAcceptGrant(request, callback);
-            break;
+    case 'Alexa.Authorization':
+        handleAcceptGrant(request, callback);
+        break;
 
         /**
          * GetMediaMetadata.
          */
-        case 'Alexa.GetMediaMetadata':
-            handleGetMediaMetadata(request, callback);
-            break;
+    case 'Alexa.MediaMetadata':
+        handleMediaMetadata(request, callback);
+        break;
 
         /**
          * The namespace of "Alexa.ConnectedHome.Query" indicates a request is being made to query devices about
@@ -402,11 +436,11 @@ exports.handler = (request, context, callback) => {
         /**
          * Received an unexpected message
          */
-        default: {
-            const errorMessage = `No supported namespace: ${request.header.namespace}`;
-            log('ERROR', errorMessage);
-            callback(new Error(errorMessage));
-        }
+    default: {
+        const errorMessage = `No supported namespace: ${request.directive.header.namespace}`;
+        log('ERROR', errorMessage);
+        callback(new Error(errorMessage));
+    }
     }
 };
 
