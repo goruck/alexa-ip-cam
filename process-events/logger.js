@@ -8,7 +8,7 @@
 
 // Get configuration.
 const fs = require('fs');
-const configObj = JSON.parse(fs.readFileSync('./config.json'));
+const configObj = JSON.parse(fs.readFileSync('../config.json'));
 const logConfig = configObj.log;
 
 const { createLogger, format, transports } = require('./node_modules/winston');

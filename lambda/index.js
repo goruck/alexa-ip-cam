@@ -12,6 +12,16 @@
  *  https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference
  */
 
+const fs = require('fs');
+const uuidv4 = require('./node_modules/uuid/v4');
+
+// Get general configuration.
+const config = JSON.parse(fs.readFileSync('./config.json'));
+//
+const RECORDINGS_BASE_PATH = config.recordings.recordingsBasePath;
+//
+const VIDEO_URI_BASE = config.recordings.videoUriBase;
+
 /**
  * Utility functions
  */
@@ -41,7 +51,6 @@ function safelyParseJSON(json) {
  *
  */
 function generateMessageID() {
-    const uuidv4 = require('./node_modules/uuid/v4');
     return uuidv4();
 }
 
@@ -73,9 +82,7 @@ function generateResponse(name, payload) {
 function getDevicesFromPartnerCloud() {
     // Read and parse json containing camera configuration.
     // This is not actually from the cloud, rather emulates it. 
-    const fs = require('fs');
-    const camerasJSON = fs.readFileSync('./cameras.json');
-    const camerasObj = safelyParseJSON(camerasJSON);
+    const camerasObj = config.cameras;
 
     return camerasObj;
 }
@@ -340,8 +347,14 @@ function handleMediaMetadata (request, callback) {
 
     const mediaId = request.directive.payload.filters.mediaIds[0];
     const mediaIdArr = mediaId.split('__');
-    const mediaUri = 'https://cam.lsacam.com:9443/nvr/camera-share/axis-ACCC8E5E7513/'+mediaIdArr.join('/')+'.mp4';
+    const manufacturerId = mediaIdArr[0]+'-'+mediaIdArr[1];
+    const mediaUri = VIDEO_URI_BASE+RECORDINGS_BASE_PATH+
+        manufacturerId+'/'+mediaIdArr.slice(2).join('/')+'.mp4';
     log('DEBUG', `mediaUri: ${mediaUri}`);
+
+    // Get time ten minutes from now.
+    let tenMinsFromNow = new Date();
+    tenMinsFromNow.setMinutes(tenMinsFromNow.getMinutes() + 10);
 
     const response = {
         'event': {
@@ -357,14 +370,14 @@ function handleMediaMetadata (request, callback) {
                     'id': request.directive.payload.filters.mediaIds[0],
                     'cause': 'MOTION_DETECTED',
                     'recording': {
-                        'name': 'Optional video name',
-                        'startTime': '2018-06-29T19:20:41Z',
-                        'endTime': '2018-06-29T19:21:41Z',
-                        'videoCodec': 'H264',
-                        'audioCodec': 'NONE',
+                        //'name': 'Optional video name',
+                        //'startTime': '2018-06-29T19:20:41Z',
+                        //'endTime': '2018-06-29T19:21:41Z',
+                        //'videoCodec': 'H264',
+                        //'audioCodec': 'NONE',
                         'uri': {
                             'value': mediaUri,
-                            'expireTime': '2019-06-29T19:31:41Z'
+                            'expireTime': tenMinsFromNow.toISOString().split('.')[0]+'Z'
                         }
                     }
                 }]
