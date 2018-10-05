@@ -1,4 +1,4 @@
-*NEW - Version 2.0 of this project adds the Camera Recap API allowing for stored recordings to be viewed.*
+*NEW - Now using the Alexa Cameras Recap API allowing for stored recordings to be viewed.*
 
 # alexa-ip-cam
 
@@ -71,7 +71,7 @@ I created an ONVIF user for Alexa access and a profile for each camera. The sett
 
 ### Setup Camera Local Recording
 
-Most modern IP cameras allow you to store a recording to a local drive triggered from motion detection or another event. This needs to be enabled to use the [Alexa Camera Recap API](https://developer.amazon.com/blogs/alexa/post/853661dc-b4f9-4c28-bc5f-1b81f00117bf/enable-customers-to-access-recorded-video-feeds-with-alexa-via-the-cameras-recap-api) which allows you to view those recordings. You'll need to change config.json to point the node.js app that processes events to the recordings and most likely the app itself to suit the particular way your camera stores recordings.
+Most modern IP cameras allow you to store a recording to a local drive triggered from motion detection or another event. This needs to be enabled to use the [Alexa Cameras Recap API](https://developer.amazon.com/blogs/alexa/post/853661dc-b4f9-4c28-bc5f-1b81f00117bf/enable-customers-to-access-recorded-video-feeds-with-alexa-via-the-cameras-recap-api) which allows you to view those recordings. You'll need to change config.json to point the node.js app that processes events to the recordings and most likely the app itself to suit the particular way your camera stores recordings.
 
 ### Authenticate Yourself to Alexa with Permissions
 
