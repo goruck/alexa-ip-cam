@@ -1,0 +1,23 @@
+{
+  "name": "process-events",
+  "version": "1.0.0",
+  "description": "Check for alarm recordings from Axis cameras and send thier metadata to Alexa Event Gateway.",
+  "main": "process-events.js",
+  "dependencies": {
+    "mongodb": "^3.1.6",
+    "sqlite3": "^4.0.2",
+    "util": "^0.11.0",
+    "uuidv4": "^1.0.1",
+    "winston": "^3.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/goruck/alexa-ip-cam/tree/master/process-events"
+  },
+  "author": "Lindo St. Angel",
+  "license": "MIT"
+}
