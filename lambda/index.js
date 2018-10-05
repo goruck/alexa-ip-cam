@@ -346,6 +346,9 @@ function handleMediaMetadata (request, callback) {
     log('DEBUG', `MediaMetadata: ${JSON.stringify(request)}`);
 
     const mediaId = request.directive.payload.filters.mediaIds[0];
+
+    // Replace underscores with slashes to reform path to recordings.
+    // Underscores were used in the media id to be compatible w/Alexa MediaMetadata API.
     const mediaIdArr = mediaId.split('__');
     const manufacturerId = mediaIdArr[0]+'-'+mediaIdArr[1];
     const mediaUri = VIDEO_URI_BASE+RECORDINGS_BASE_PATH+
