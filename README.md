@@ -10,22 +10,20 @@ Many people like myself have IP cameras without a cloud service that they'd like
 
 Therefore I started this project to allow me to view live and recorded camera streams on Amazon devices such as the Echo Show, the Echo Spot and the FireTV and to do that I had to develop an Alexa Smart Home skill. 
 
-I looked for other projects on GitHub for code to leverage but didn't find anything exactly solving my particular problem. However I did find an excellent repo called [CameraPi](https://github.com/sammachin/camerapi) from [Sam Machin](https://github.com/sammachin) that describes how to use Alexa to control a camera connected to a Raspberry PI that I used as a basis for my effort. Thank you Sam!
-
-Note: Please see my related [smart-zoneminder](https://github.com/goruck/smart-zoneminder) project that enables fast upload of [ZoneMinder](https://www.zoneminder.com/) alarm frame images to an S3 archive where they are analyzed by Amazon Rekognition and made accessible by voice via Alexa.
+Note: Please see my related [smart-zoneminder](https://github.com/goruck/smart-zoneminder) project that enables fast upload of [ZoneMinder](https://www.zoneminder.com/) alarm frame images to an S3 archive where they are analyzed by Amazon Rekognition or locally by Tensorflow and made accessible by voice via Alexa.
 
 I hope others find this useful. I've described the project in some detail and outlined the steps below that I used to create this skill.
 
 ## System Architecture
 
-The system consists of the following main componenets.
+The system consists of the following main components.
 
 1. An Alexa Smart Home skill.
 2. An AWS Lambda instance for handling the skill intents including camera discovery and control.
 3. An Alexa-enabled device with a display such as Amazon Echo Show or Spot.
 3. A RTSP proxy running on the local linux machine that aggregates the streams from the cameras on the LAN into one front-end stream. This component isn't needed if you only have one camera. I used The [LIVE555 Proxy Server](http://www.live555.com/proxyServer/).
 4. A TLS encryption proxy on the local linux machine that encypts the stream from the RTSP proxy server and streams it on local machine's port 443. I used [stunnel](https://www.stunnel.org/index.html).
-6. A program running on the local linux machine that uploads camera recording metadata to the Alexa Event Gateway via the [Alexa.MediaMetadata Interface](https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html#media-object) to enable the viewing of past events captured by the camera. In my case I used this [node.js]() app. 
+6. A program running on the local linux machine that uploads camera recording metadata to the Alexa Event Gateway via the [Alexa.MediaMetadata Interface](https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html#media-object) to enable the viewing of past events captured by the camera. In my case I used a node.js app called [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js).
 7. A webserver running on the local linux machine that allows the Lambda instance to access the recordings stored by the cameras. I'm using Apache. 
 
 ## Prerequisites
@@ -34,7 +32,7 @@ You'll need the following setup before starting this project.
 
 1. An [Amazon Developers](https://developer.amazon.com/) account.
 2. An [Amazon AWS](https://aws.amazon.com/) account.
-3. IP camera(s) that support ONVIF and connected to your LAN.
+3. IP camera(s) connected to your LAN that support ONVIF and local recordings.
 4. A Linux machine connected to your LAN. I used an existing server running Ubuntu 18.04 but a Raspberry Pi, for example, would be fine.
 
 ## Installation Steps
@@ -47,7 +45,7 @@ Copy config-template.json to config.json. There are several values that need to 
 
 ### Setup the Alexa Smart Home Skill and and Lambda handler
 
-The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarthome/steps-to-build-a-smart-home-skill.html) and [Build Smart Home Camera Skills](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html) on the Amazon Alexa Developers site give detailed instructions on how to create the skill and how the API works. Replace the Lambda code in the template example with the code in [lambda]() directory of this repo. The code emulates the camera configuration data that would normally come from a 3rd party camera cloud service. You'll have to edit [config.json]() to make it reflect your camera names and specs.
+The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarthome/steps-to-build-a-smart-home-skill.html) and [Build Smart Home Camera Skills](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html) on the Amazon Alexa Developers site give detailed instructions on how to create the skill and how the API works. Replace the Lambda code in the template example with the code in [lambda]() directory of this repo. The code emulates the camera configuration data that would normally come from a 3rd party camera cloud service. You'll have to edit [config.json](https://github.com/goruck/alexa-ip-cam/blob/master/config-template.json) to make it reflect your camera names and specs.
 
 ### Setup the RTSP Proxy
 
@@ -69,9 +67,11 @@ I created an ONVIF user for Alexa access and a profile for each camera. The sett
 
 ![Alt text](/images/onvif-profile.jpg?raw=true "AXIS camera onvif profile for Alexa.")
 
-### Setup Camera Local Recording
+### Setup Camera Local Recording and Processing
 
-Most modern IP cameras allow you to store a recording to a local drive triggered from motion detection or another event. This needs to be enabled to use the [Alexa Cameras Recap API](https://developer.amazon.com/blogs/alexa/post/853661dc-b4f9-4c28-bc5f-1b81f00117bf/enable-customers-to-access-recorded-video-feeds-with-alexa-via-the-cameras-recap-api) which allows you to view those recordings. You'll need to change config.json to point the node.js app that processes events to the recordings and most likely the app itself to suit the particular way your camera stores recordings.
+Most modern IP cameras allow you to store a recording to a local drive triggered from motion detection or another event. This needs to be enabled to use the [Alexa Cameras Recap API](https://developer.amazon.com/blogs/alexa/post/853661dc-b4f9-4c28-bc5f-1b81f00117bf/enable-customers-to-access-recorded-video-feeds-with-alexa-via-the-cameras-recap-api) which allows you to view those recordings.
+
+You'll need to change [config.json](https://github.com/goruck/alexa-ip-cam/blob/master/config-template.json) to point the [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js) app that processes the recordings and most likely the app itself to suit the particular way your camera stores recordings. The code here has only been tested against Axis cameras. 
 
 ### Authenticate Yourself to Alexa with Permissions
 
@@ -90,3 +90,9 @@ Once everything is setup you need to enable your skill in the Alexa companion mo
 ## Results
 
 Overall the skill works well but the latency between asking Alexa to show a camera and the video appearing on the Echo's or FireTV screen is a little too long for a great experience, on average 5 secs or so. I haven't yet tracked down the cause of it. Also I've seen the video re-buffer occasionally which can be irritating and once in a great while the video freezes during rebuffering. Again, I'll track this down and optimize.
+
+## Acknowledgments
+
+I looked for other projects on GitHub for code to leverage but didn't find anything exactly solving my particular problem. However I did find an excellent repo called [CameraPi](https://github.com/sammachin/camerapi) from [Sam Machin](https://github.com/sammachin) that describes how to use Alexa to control a camera connected to a Raspberry PI that I used as a basis for my effort. Thank you Sam!
+
+I used [emtunc's very cool blog](https://emtunc.org/blog/) to learn how to setup the RTSP proxy. Thank you emtunc!
