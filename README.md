@@ -6,7 +6,7 @@ Use Alexa's Smart Home Skill API with standalone IP cameras to stream live video
 
 ## Background
 
-Many people like myself have IP cameras without a cloud service that they'd like to control using Amazon's Alexa [Smart Home Skill API](https://developer.amazon.com/docs/smarthome/understand-the-smart-home-skill-api.html). The Smart Home Skill API is great but assumes you are using a cloud service for your cameras and has very specific security and streaming requirements which proves to be challenging to connect cameras in this way. In my case I have several [Axis IP cameras](https://www.axis.com/us/en/products/network-cameras) around the house connected via my LAN to a local Linux server running the [Zoneminder](https://zoneminder.com/) NVR software which records the streams and provides event detection. The Axis cameras can also be configured to do event detection and store recordings locally. I.e, no camera cloud service is needed in my system which avoids associated recurring costs.
+Many people like myself have IP cameras without a cloud service that they'd like to control using Amazon's Alexa [Smart Home Skill API](https://developer.amazon.com/docs/smarthome/understand-the-smart-home-skill-api.html). The Smart Home Skill API is great but assumes you are using a cloud service for your cameras and has very specific security and streaming requirements that makes it challenging to connect standalone cameras. In my case I have several [Axis IP cameras](https://www.axis.com/us/en/products/network-cameras) around the house connected via my LAN to a local Linux server running the [Zoneminder](https://zoneminder.com/) NVR software which records the streams and provides event detection. The Axis cameras can also be configured to do event detection and store recordings locally. I.e, no camera cloud service is needed in my system which avoids associated recurring costs.
 
 Therefore I started this project to allow me to view live and recorded camera streams on Amazon devices such as the Echo Show, the Echo Spot and the FireTV and to do that I had to develop an Alexa Smart Home skill. 
 
@@ -37,9 +37,11 @@ You'll need the following setup before starting this project.
 3. IP camera(s) that support ONVIF and connected to your LAN.
 4. A Linux machine connected to your LAN. I used an existing server running Ubuntu 18.04 but a Raspberry Pi, for example, would be fine.
 
-## Installation
+## Installation Steps
 
-### General Configuration
+### Clone this repo
+
+### Configure General Settings
 
 Copy config-template.json to config.json. There are several values that need to be changed to suit your setup. Some of them are described below. 
 
@@ -59,7 +61,7 @@ Per the Alexa Smart Home camera [documentation](https://developer.amazon.com/doc
 
 ### Setup the TLS encryption proxy
 
-stunnel is a debian package so it easy to install using apt-get as root. The configuration I used is in the file stunnel.conf which is placed in /etc/stunnel/stunnel.conf. stunnel is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
+stunnel is a ubuntu package so it easy to install using apt-get as root. The configuration I used is in the file stunnel.conf which is placed in /etc/stunnel/stunnel.conf. stunnel is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
 
 ### Setup Camera ONVIF
 
@@ -69,7 +71,7 @@ I created an ONVIF user for Alexa access and a profile for each camera. The sett
 
 ### Setup Camera Local Recording
 
-Most modern IP cameras allow you to store a recording to a local drive triggered from motion detection or another event. This needs to be enabled to use the [Alexa Camera Recap API](https://developer.amazon.com/blogs/alexa/post/853661dc-b4f9-4c28-bc5f-1b81f00117bf/enable-customers-to-access-recorded-video-feeds-with-alexa-via-the-cameras-recap-api) which allows you to view those recordings. You'll need to change config.json to point the node.js app to the recordings and most likely the [node.js]() app itself to suit the particular way your camera stores recordings.
+Most modern IP cameras allow you to store a recording to a local drive triggered from motion detection or another event. This needs to be enabled to use the [Alexa Camera Recap API](https://developer.amazon.com/blogs/alexa/post/853661dc-b4f9-4c28-bc5f-1b81f00117bf/enable-customers-to-access-recorded-video-feeds-with-alexa-via-the-cameras-recap-api) which allows you to view those recordings. You'll need to change config.json to point the node.js app that processes events to the recordings and most likely the app itself to suit the particular way your camera stores recordings.
 
 ### Authenticate Yourself to Alexa with Permissions
 
@@ -87,4 +89,4 @@ Once everything is setup you need to enable your skill in the Alexa companion mo
 
 ## Results
 
-Overall the skill works well but the latency between asking Alexa to show a camera and the video appearing on the Echo's or FireTV screen is a little too long for a great experience, on average 5 secs or so. I haven't yet tracked down the cause of it. Also I've seen the video re-buffer occasionally which can be irritating and once in a great while the video freezes during rebuffering. Again, I'll track this down and optimize. 
+Overall the skill works well but the latency between asking Alexa to show a camera and the video appearing on the Echo's or FireTV screen is a little too long for a great experience, on average 5 secs or so. I haven't yet tracked down the cause of it. Also I've seen the video re-buffer occasionally which can be irritating and once in a great while the video freezes during rebuffering. Again, I'll track this down and optimize.
