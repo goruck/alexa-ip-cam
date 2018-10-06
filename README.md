@@ -23,7 +23,7 @@ The system consists of the following main components.
 3. An Alexa-enabled device with a display such as Amazon Echo Show or Spot.
 3. A RTSP proxy running on the local linux machine that aggregates the streams from the cameras on the LAN into one front-end stream. This component isn't needed if you only have one camera. I used The [LIVE555 Proxy Server](http://www.live555.com/proxyServer/).
 4. A TLS encryption proxy on the local linux machine that encypts the stream from the RTSP proxy server and streams it on local machine's port 443. I used [stunnel](https://www.stunnel.org/index.html).
-6. A program running on the local linux machine that uploads camera recording metadata to the Alexa Event Gateway via the [Alexa.MediaMetadata Interface](https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html#media-object) to enable the viewing of past events captured by the camera. In my case I used a node.js app called [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js).
+6. A program running on the local linux machine that uploads camera recording metadata to the Alexa Event Gateway via the [Alexa.MediaMetadata Interface](https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html) to enable the viewing of past events captured by the camera. In my case I used a node.js app called [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js).
 7. A webserver running on the local linux machine that allows the Lambda instance to access the recordings stored by the cameras. I'm using Apache. 
 
 ## Prerequisites
@@ -45,7 +45,7 @@ Copy config-template.json to config.json. There are several values that need to 
 
 ### Setup the Alexa Smart Home Skill and and Lambda handler
 
-The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarthome/steps-to-build-a-smart-home-skill.html) and [Build Smart Home Camera Skills](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html) on the Amazon Alexa Developers site give detailed instructions on how to create the skill and how the API works. Replace the Lambda code in the template example with the code in [lambda]() directory of this repo. The code emulates the camera configuration data that would normally come from a 3rd party camera cloud service. You'll have to edit [config.json](https://github.com/goruck/alexa-ip-cam/blob/master/config-template.json) to make it reflect your camera names and specs.
+The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarthome/steps-to-build-a-smart-home-skill.html) and [Build Smart Home Camera Skills](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html) on the Amazon Alexa Developers site give detailed instructions on how to create the skill and how the API works. Replace the Lambda code in the template example with the code in index.js in [lambda](https://github.com/goruck/alexa-ip-cam/tree/master/lambda) directory of this repo. The code emulates the camera configuration data that would normally come from a 3rd party camera cloud service. You'll have to edit [config.json](https://github.com/goruck/alexa-ip-cam/blob/master/config-template.json) to make it reflect your camera names and specs.
 
 ### Setup the RTSP Proxy
 
@@ -75,9 +75,9 @@ You'll need to change [config.json](https://github.com/goruck/alexa-ip-cam/blob/
 
 ### Authenticate Yourself to Alexa with Permissions
 
-As mentioned above the recording metadata is sent to the Alexa Gateway. This is done asynchronously and so you must provide the proper authentication information with the request. Follow the steps outlined in [Authenticate a Customer to Alexa with Permissions](https://developer.amazon.com/docs/smarthome/authenticate-a-customer-permissions.html#notification-of-expired-token-and-using-the-refresh-token) to make this happen. You'll also need to add the relevant information to config.json.
+As mentioned above the recording metadata is sent to the Alexa Gateway. This is done asynchronously and so you must provide the proper authentication information with the request. Follow the steps outlined in [Authenticate a Customer to Alexa with Permissions](https://developer.amazon.com/docs/smarthome/authenticate-a-customer-permissions.html) to make this happen. You'll also need to add the relevant information to config.json.
 
-Also see [Authorization Code Grant](https://developer.amazon.com/docs/login-with-amazon/authorization-code-grant.html#Using%20Refresh%20Tokens), [Alexa.Authorization Interface](https://developer.amazon.com/docs/device-apis/alexa-authorization.html) and [Send Events to the Event Gateway](https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html) for more information on how this works.
+Also see [Authorization Code Grant](https://developer.amazon.com/docs/login-with-amazon/authorization-code-grant.html), [Alexa.Authorization Interface](https://developer.amazon.com/docs/device-apis/alexa-authorization.html) and [Send Events to the Event Gateway](https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html) for more information on how this works.
 
 ### Setup Webserver
 
