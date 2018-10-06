@@ -2,14 +2,17 @@
 
 /**
  * Discover and show cameras on a local network without a cloud service.
- * Copyright (c) Lindo St. Angel 2018.
+ * This is part of the alexa-ip-cam project.
+ * See https://github.com/goruck/alexa-ip-cam.
  * 
  * This demonstrates a smart home skill using the publicly available API on Amazon's Alexa platform.
  * For more information about developing smart home skills, see
- *  https://developer.amazon.com/alexa/smart-home
+ * https://developer.amazon.com/alexa/smart-home
  *
  * For details on the smart home API, please visit
- *  https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference
+ * https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference
+ * 
+ * Copyright (c) Lindo St. Angel 2018.
  */
 
 const fs = require('fs');
@@ -34,19 +37,6 @@ function log(title, msg) {
 }
 
 /**
-* Checks for valid JSON and parses it. 
-*/
-function safelyParseJSON(json) {
-    let parsed = null;
-
-    try {
-        return parsed = JSON.parse(json);
-    } catch (e) {
-        return null;
-    }
-}
-
-/**
  * Generate a unique message ID
  *
  */
@@ -63,13 +53,13 @@ function generateMessageID() {
  */
 function generateResponse(name, payload) {
     return {
-        header: {
-            messageId: generateMessageID(),
-            name: name,
-            namespace: 'Alexa.ConnectedHome.Control',
-            payloadVersion: '2',
+        'header': {
+            'messageId': generateMessageID(),
+            'name': name,
+            'namespace': 'Alexa.ConnectedHome.Control',
+            'payloadVersion': '2',
         },
-        payload: payload,
+        'payload': payload,
     };
 }
 
@@ -82,7 +72,7 @@ function generateResponse(name, payload) {
 function getDevicesFromPartnerCloud() {
     // Read and parse json containing camera configuration.
     // This is not actually from the cloud, rather emulates it. 
-    const camerasObj = config.cameras;
+    const camerasObj = config;
 
     return camerasObj;
 }
@@ -97,7 +87,6 @@ function isValidToken() {
 
 function isDeviceOnline(applianceId) {
     log('DEBUG', `isDeviceOnline (applianceId: ${applianceId})`);
-
     /**
      * Always returns true for sample code.
      * You should update this method to your own validation.
@@ -152,10 +141,10 @@ function handleDiscovery(request, callback) {
      *
      */
     const header = {
-        messageId: generateMessageID(),
-        name: 'Discover.Response',
-        namespace: 'Alexa.Discovery',
-        payloadVersion: '3'
+        'messageId': generateMessageID(),
+        'name': 'Discover.Response',
+        'namespace': 'Alexa.Discovery',
+        'payloadVersion': '3'
     };
 
     const camerasObj = getDevicesFromPartnerCloud();
@@ -169,25 +158,25 @@ function handleDiscovery(request, callback) {
         }
 
         const endpoint = {
-            endpointId: camerasObj.cameras[i].endpointId,
-            manufacturerName: camerasObj.cameras[i].manufacturerName,
-            modelName: camerasObj.cameras[i].modelName,
-            friendlyName: camerasObj.cameras[i].friendlyName,
-            description: camerasObj.cameras[i].description,
-            displayCategories: ['CAMERA'],
-            cookie: {},
-            capabilities: [
+            'endpointId': camerasObj.cameras[i].endpointId,
+            'manufacturerName': camerasObj.cameras[i].manufacturerName,
+            'modelName': camerasObj.cameras[i].modelName,
+            'friendlyName': camerasObj.cameras[i].friendlyName,
+            'description': camerasObj.cameras[i].description,
+            'displayCategories': ['CAMERA'],
+            'cookie': {},
+            'capabilities': [
                 {
-                    type: 'AlexaInterface',
-                    interface: 'Alexa.CameraStreamController',
-                    version: '3',
-                    cameraStreamConfigurations : [
+                    'type': 'AlexaInterface',
+                    'interface': 'Alexa.CameraStreamController',
+                    'version': '3',
+                    'cameraStreamConfigurations' : [
                         {
-                            protocols: ['RTSP'], 
-                            resolutions: _resolutions,
-                            authorizationTypes: ['NONE'], 
-                            videoCodecs: ['H264'],
-                            audioCodecs: ['NONE'] 
+                            'protocols': ['RTSP'], 
+                            'resolutions': _resolutions,
+                            'authorizationTypes': ['NONE'], 
+                            'videoCodecs': ['H264'],
+                            'audioCodecs': ['NONE'] 
                         }]
                 },
                 {
@@ -202,10 +191,7 @@ function handleDiscovery(request, callback) {
     }
 
     const response = {
-        event: {
-            header,
-            payload: {endpoints}
-        }
+        'event': {header, 'payload': {endpoints}}
     };
 
     /**
@@ -238,7 +224,7 @@ function handleControl(request, callback) {
      * Generic stub for validating the token against your cloud service.
      * Replace isValidToken() function with your own validation.
      *
-     * If the token is invliad, return InvalidAccessTokenError
+     * If the token is invalid, return InvalidAccessTokenError
      *  https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference#invalidaccesstokenerror
      */
     if (!userAccessToken || !isValidToken(userAccessToken)) {
@@ -289,33 +275,28 @@ function handleControl(request, callback) {
     const _height = request.directive.payload.cameraStreams[0].resolution.height;
     
     const header = {
-        correlationToken: correlation_Token,
-        messageId: generateMessageID(),
-        name: 'Response',
-        namespace: 'Alexa.CameraStreamController',
-        payloadVersion: '3'
+        'correlationToken': correlation_Token,
+        'messageId': generateMessageID(),
+        'name': 'Response',
+        'namespace': 'Alexa.CameraStreamController',
+        'payloadVersion': '3'
     };
 
     // Get uri of camera using applianceId as an index. 
-    const fs = require('fs');
-    const camerasJSON = fs.readFileSync('./cameras.json');
-    const camerasObj = safelyParseJSON(camerasJSON);
+    const camerasObj = getDevicesFromPartnerCloud();
     const cameraIdx = parseInt(applianceId) - 1;
     const _uri = camerasObj.cameras[cameraIdx].uri;
     
     const payload = {
         cameraStreams: [
             {
-                uri: _uri,
-                resolution: {'width': _width, 'height': _height}
+                'uri': _uri,
+                'resolution': {'width': _width, 'height': _height}
             }]
     };
 
     const response = {
-        event: {
-            header,
-            payload
-        }
+        'event': {header, payload}
     };
         
     log('DEBUG', `Control Confirmation: ${JSON.stringify(response)}`);
@@ -323,6 +304,14 @@ function handleControl(request, callback) {
     callback(null, response);
 }
 
+/**
+ * This handles an AcceptGrant directive.
+ * This enables you to obtain credentials that identify and authenticate a customer to Alexa.
+ * See https://developer.amazon.com/docs/device-apis/alexa-authorization.html.
+ * 
+ * @param {object} request - The full request object from the Alexa smart home service.
+ * @param {function} callback - The callback object on which to succeed or fail the response.
+ */
 function handleAcceptGrant (request, callback) {
     log('DEBUG', `Accept Grant: ${JSON.stringify(request)}`);
 
@@ -342,6 +331,13 @@ function handleAcceptGrant (request, callback) {
     callback(null, response);
 }
 
+/**
+ * This forms the response to a GetMediaMetadata directive.
+ * See https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html.
+ * 
+ * @param {object} request - The full request object from the Alexa smart home service.
+ * @param {function} callback - The callback object on which to succeed or fail the response.
+ */
 function handleMediaMetadata (request, callback) {
     log('DEBUG', `MediaMetadata: ${JSON.stringify(request)}`);
 
@@ -355,7 +351,6 @@ function handleMediaMetadata (request, callback) {
         manufacturerId+'/'+mediaIdArr.slice(2).join('/')+'.mp4';
     log('DEBUG', `mediaUri: ${mediaUri}`);
 
-    // Get time ten minutes from now.
     let tenMinsFromNow = new Date();
     tenMinsFromNow.setMinutes(tenMinsFromNow.getMinutes() + 10);
 
@@ -400,16 +395,16 @@ function handleMediaMetadata (request, callback) {
  * Incoming events from Alexa service through Smart Home API are all handled by this function.
  *
  * It is recommended to validate the request and response with Alexa Smart Home Skill API Validation package.
- *  https://github.com/alexa/alexa-smarthome-validation
+ * https://github.com/alexa/alexa-smarthome-validation
  */
 exports.handler = (request, context, callback) => {
     switch (request.directive.header.namespace) {
-    /**
+        /**
          * The namespace of 'Alexa.ConnectedHome.Discovery' indicates a request is being made to the Lambda for
          * discovering all appliances associated with the customer's appliance cloud account.
          *
          * For more information on device discovery, please see
-         *  https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference#discovery-messages
+         * https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/smart-home-skill-api-reference#discovery-messages
          */
     case 'Alexa.Discovery':
         handleDiscovery(request, callback);
@@ -426,6 +421,8 @@ exports.handler = (request, context, callback) => {
 
         /**
          * Accept Grant.
+         * This enables you to obtain credentials that identify and authenticate a customer to Alexa.
+         * See https://developer.amazon.com/docs/device-apis/alexa-authorization.html.
          */
     case 'Alexa.Authorization':
         handleAcceptGrant(request, callback);
@@ -433,6 +430,8 @@ exports.handler = (request, context, callback) => {
 
         /**
          * GetMediaMetadata.
+         * Sent when Alexa needs to update information about the media recording, such as updating the URL.
+         * See https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html.
          */
     case 'Alexa.MediaMetadata':
         handleMediaMetadata(request, callback);
