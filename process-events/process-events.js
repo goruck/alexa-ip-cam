@@ -214,7 +214,7 @@ const getAccessToken = () => {
 
             let token = {};
             httpsPost(LWA_HOST, LWA_PATH, lwaHeaders, postData).then(res => {
-                token = JSON.parse(res);
+                token = JSON.parse(res.data);
                 return storeToken(token);
             }).then(res => {
                 log.debug(`storeToken res: ${res}.`);
@@ -516,7 +516,7 @@ const checkForNewRecordings = () => {
                     };
                     return insertDocMongodb(mongodbClient, MONGODB_COLLECTION, mongodbDoc);
                 }).then(res => {
-                    log.debug(res);
+                    log.debug(`mongodb res ${res}`);
                     mongodbClient.close();
                     recordingsUploaded++;
                     if (recordingsUploaded > numOfRecordings) db.close();
