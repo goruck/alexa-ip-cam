@@ -113,23 +113,21 @@ const httpsPost = (host, path, headers, postData) => {
 /**
  * Store auth token as JSON.
  * 
- * @param {string} token
+ * @param {object} token
  * 
- * @returns {Promise} - Access token.
+ * @returns {Promise}
  */
 const storeToken = token => {
-    const tokenObj = JSON.parse(token);
-
     const data = {
-        'accessToken': tokenObj.access_token,
-        'refreshToken': tokenObj.refresh_token,
-        'expiresIn': tokenObj.expires_in,
+        'accessToken': token.access_token,
+        'refreshToken': token.refresh_token,
+        'expiresIn': token.expires_in,
         'datetime': (new Date()).toISOString()
     };
 
     return new Promise((resolve, reject) => {
         fs.writeFile('./tokens.json', JSON.stringify(data, null, 2), 'utf8', (err) => {
-            err ? reject(err) : resolve(tokenObj.access_token);
+            err ? reject(err) : resolve('Token stored');
         });
     });
 };
@@ -214,10 +212,13 @@ const getAccessToken = () => {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
             };
 
+            let token = {};
             httpsPost(LWA_HOST, LWA_PATH, lwaHeaders, postData).then(res => {
-                return storeToken(res.data);
+                token = JSON.parse(res);
+                return storeToken(token);
             }).then(res => {
-                resolve(res);
+                log.debug(`storeToken res: ${res}.`);
+                resolve(token.access_token);
             }).catch(err => {
                 reject(err);
             });
@@ -355,12 +356,12 @@ const checkIfMongodbDocExists = (client, collectionName, document) => {
  */
 const checkForNewRecordings = () => {
     CAMERAS.forEach(camera => {
-        log.info(`Checking for new recordings on camera ${camera.friendlyName}.`);
+        log.debug(`Checking for new recordings on camera ${camera.friendlyName}.`);
 
         // Form filesystem path to camera recording database and open it.
         const cameraDbPath = RECORDINGS_BASE_PATH+camera.manufacturerId+'/index.db';
         if (!fs.existsSync(cameraDbPath)) {
-            log.error('Camera database not found.');
+            log.debug('Camera database not found.');
             return;
         }
         const db = new sqlite3.Database(cameraDbPath);
@@ -432,6 +433,7 @@ const checkForNewRecordings = () => {
                         mongodbClient.close();
                         return Promise.reject('Recording exists.'); // TODO - seems like a hack.
                     } else {
+                        log.info(`Processing recording ${row.recordingId} from ${camera.friendlyName}.`);
                         return convertMkvToMp4(mkvName, mp4Name);
                     }
                 }).then(res => {
