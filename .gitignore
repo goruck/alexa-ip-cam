@@ -1,5 +1,7 @@
 info/
+scripts/
 vars.sh
 lambda/index.zip
 config.json
 .eslintrc.json
+.gitignore
