@@ -23,7 +23,7 @@ The system consists of the following main components.
 3. An Alexa-enabled device with a display such as Amazon Echo Show or Spot.
 3. A RTSP proxy running on the local linux machine that aggregates the streams from the cameras on the LAN into one front-end stream. This component isn't needed if you only have one camera. I used The [LIVE555 Proxy Server](http://www.live555.com/proxyServer/).
 4. A TLS encryption proxy on the local linux machine that encypts the stream from the RTSP proxy server and streams it on local machine's port 443. I used [stunnel](https://www.stunnel.org/index.html).
-6. A program running on the local linux machine that uploads camera recording metadata to the Alexa Event Gateway via the [Alexa.MediaMetadata Interface](https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html) to enable the viewing of past events captured by the camera. In my case I used a node.js app called [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js).
+6. A program running on the local linux machine that uploads camera recording metadata to the Alexa Event Gateway via the [Alexa.MediaMetadata Interface](https://developer.amazon.com/docs/device-apis/alexa-mediametadata.html) to enable the viewing of past events captured by the camera. In my case I used a node.js app I created called [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js).
 7. A webserver running on the local linux machine that allows the Lambda instance to access the recordings stored by the cameras. I'm using Apache. 
 
 ## Prerequisites
@@ -63,7 +63,7 @@ stunnel is a ubuntu package so it easy to install using apt-get as root. The con
 
 ### Setup Camera ONVIF
 
-I created an ONVIF user for Alexa access and a profile for each camera. The settings for the profile are shown in the figure below.
+I created an ONVIF user for Alexa access and a profile for each camera. The settings for the profile are shown in the figure below. Note the specific settings for the video encoder - these are the only values that have been tested so you should use the same or be prepared to experiment. 
 
 ![Alt text](/images/onvif-profile.jpg?raw=true "AXIS camera onvif profile for Alexa.")
 
@@ -71,7 +71,7 @@ I created an ONVIF user for Alexa access and a profile for each camera. The sett
 
 Most modern IP cameras allow you to store a recording to a local drive triggered from motion detection or another event. This needs to be enabled to use the [Alexa Cameras Recap API](https://developer.amazon.com/blogs/alexa/post/853661dc-b4f9-4c28-bc5f-1b81f00117bf/enable-customers-to-access-recorded-video-feeds-with-alexa-via-the-cameras-recap-api) which allows you to view those recordings.
 
-You'll need to change [config.json](https://github.com/goruck/alexa-ip-cam/blob/master/config-template.json) to point the [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js) app that processes the recordings and most likely the app itself to suit the particular way your camera stores recordings. The code here has only been tested against Axis cameras. 
+You'll need to change [config.json](https://github.com/goruck/alexa-ip-cam/blob/master/config-template.json) to point the [process-events.js](https://github.com/goruck/alexa-ip-cam/blob/master/process-events/process-events.js) app that processes the recordings and most likely the app itself to suit the particular way your camera stores recordings. The code here has only been tested against Axis cameras. The process-events.js app is run as a Linux service using systemd.
 
 ### Authenticate Yourself to Alexa with Permissions
 
