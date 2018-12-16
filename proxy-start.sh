@@ -7,11 +7,12 @@
 # Start the proxy server.
 # Streams will be at rtsp://HOST_IP:554/proxyStream-n
 # where n is the order of the input streams below.
-/home/lindo/develop/live/proxyServer/live555ProxyServer \
-  rtsp://$CAM_1/onvif-media/media.amp?profile=profile_alexa_h264 \
-  rtsp://$CAM_2/onvif-media/media.amp?profile=profile_alexa_h264 \
-  "rtsp://$CAM_3/onvif-media/media.amp?profile=profile_alexa_h264&gotopresetname=Home&camera=2" \
-  rtsp://$CAM_4/onvif-media/media.amp?profile=profile_alexa_h264 \
-  rtsp://$CAM_5/onvif-media/media.amp?profile=profile_alexa_h264 \
-  rtsp://$CAM_6/onvif-media/media.amp?profile=profile_alexa_h264 \
-  "rtsp://$CAM_3/onvif-media/media.amp?profile=profile_alexa_h264&gotopresetname=Home&camera=1"
+# Each rtsp stream is at port 554 which is why the proxy is at port 8554.
+/home/lindo/develop/live/proxyServer/live555ProxyServer -p 8554 \
+  "rtsp://$CAM_1/axis-media/media.amp?streamprofile=alexa-ip-cam" \
+  "rtsp://$CAM_2/axis-media/media.amp?streamprofile=alexa-ip-cam" \
+  "rtsp://$CAM_3/axis-media/media.amp?streamprofile=alexa-ip-cam&camera=2" \
+  "rtsp://$CAM_4/axis-media/media.amp?streamprofile=alexa-ip-cam" \
+  "rtsp://$CAM_5/axis-media/media.amp?streamprofile=alexa-ip-cam" \
+  "rtsp://$CAM_6/axis-media/media.amp?streamprofile=alexa-ip-cam" \
+  "rtsp://$CAM_3/axis-media/media.amp?streamprofile=alexa-ip-cam&camera=1"

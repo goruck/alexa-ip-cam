@@ -53,13 +53,13 @@ function generateMessageID() {
  */
 function generateResponse(name, payload) {
     return {
-        'header': {
-            'messageId': generateMessageID(),
-            'name': name,
-            'namespace': 'Alexa.ConnectedHome.Control',
-            'payloadVersion': '2',
+        header: {
+            messageId: generateMessageID(),
+            name: name,
+            namespace: 'Alexa.ConnectedHome.Control',
+            payloadVersion: '2',
         },
-        'payload': payload,
+        payload: payload,
     };
 }
 
@@ -141,10 +141,10 @@ function handleDiscovery(request, callback) {
      *
      */
     const header = {
-        'messageId': generateMessageID(),
-        'name': 'Discover.Response',
-        'namespace': 'Alexa.Discovery',
-        'payloadVersion': '3'
+        messageId: generateMessageID(),
+        name: 'Discover.Response',
+        namespace: 'Alexa.Discovery',
+        payloadVersion: '3'
     };
 
     const camerasObj = getDevicesFromPartnerCloud();
@@ -158,32 +158,32 @@ function handleDiscovery(request, callback) {
         }
 
         const endpoint = {
-            'endpointId': camerasObj.cameras[i].endpointId,
-            'manufacturerName': camerasObj.cameras[i].manufacturerName,
-            'modelName': camerasObj.cameras[i].modelName,
-            'friendlyName': camerasObj.cameras[i].friendlyName,
-            'description': camerasObj.cameras[i].description,
-            'displayCategories': ['CAMERA'],
-            'cookie': {},
-            'capabilities': [
+            endpointId: camerasObj.cameras[i].endpointId,
+            manufacturerName: camerasObj.cameras[i].manufacturerName,
+            modelName: camerasObj.cameras[i].modelName,
+            friendlyName: camerasObj.cameras[i].friendlyName,
+            description: camerasObj.cameras[i].description,
+            displayCategories: ['CAMERA'],
+            cookie: {},
+            capabilities: [
                 {
-                    'type': 'AlexaInterface',
-                    'interface': 'Alexa.CameraStreamController',
-                    'version': '3',
-                    'cameraStreamConfigurations' : [
+                    type: 'AlexaInterface',
+                    interface: 'Alexa.CameraStreamController',
+                    version: '3',
+                    cameraStreamConfigurations: [
                         {
-                            'protocols': ['RTSP'], 
-                            'resolutions': _resolutions,
-                            'authorizationTypes': ['NONE'], 
-                            'videoCodecs': ['H264'],
-                            'audioCodecs': ['NONE'] 
+                            protocols: ['RTSP'], 
+                            resolutions: _resolutions,
+                            authorizationTypes: ['NONE'], 
+                            videoCodecs: ['H264'],
+                            audioCodecs: ['NONE'] 
                         }]
                 },
                 {
-                    'type': 'AlexaInterface',
-                    'interface': 'Alexa.MediaMetadata',
-                    'version': '3',
-                    'proactivelyReported': true
+                    type: 'AlexaInterface',
+                    interface: 'Alexa.MediaMetadata',
+                    version: '3',
+                    proactivelyReported: true
                 }
             ]
         };
@@ -275,11 +275,11 @@ function handleControl(request, callback) {
     const _height = request.directive.payload.cameraStreams[0].resolution.height;
     
     const header = {
-        'correlationToken': correlation_Token,
-        'messageId': generateMessageID(),
-        'name': 'Response',
-        'namespace': 'Alexa.CameraStreamController',
-        'payloadVersion': '3'
+        correlationToken: correlation_Token,
+        messageId: generateMessageID(),
+        name: 'Response',
+        namespace: 'Alexa.CameraStreamController',
+        payloadVersion: '3'
     };
 
     // Get uri of camera using applianceId as an index. 
@@ -290,13 +290,17 @@ function handleControl(request, callback) {
     const payload = {
         cameraStreams: [
             {
-                'uri': _uri,
-                'resolution': {'width': _width, 'height': _height}
+                uri: _uri,
+                protocol: 'RTSP',
+                resolution: {width: _width, height: _height},
+                authorizationType: 'NONE',
+                videoCodec: 'H264',
+                audioCodec: 'NONE'
             }]
     };
 
     const response = {
-        'event': {header, payload}
+        event: {header, payload}
     };
         
     log('DEBUG', `Control Confirmation: ${JSON.stringify(response)}`);
@@ -316,14 +320,14 @@ function handleAcceptGrant (request, callback) {
     log('DEBUG', `Accept Grant: ${JSON.stringify(request)}`);
 
     const response = {
-        'event': {
-            'header': {
-                'messageId': generateMessageID(),
-                'namespace': 'Alexa.Authorization',
-                'name': 'AcceptGrant.Response',
-                'payloadVersion': '3'
+        event: {
+            header: {
+                messageId: generateMessageID(),
+                namespace: 'Alexa.Authorization',
+                name: 'AcceptGrant.Response',
+                payloadVersion: '3'
             },
-            'payload': {
+            payload: {
             }
         }
     };
@@ -355,27 +359,27 @@ function handleMediaMetadata (request, callback) {
     tenMinsFromNow.setMinutes(tenMinsFromNow.getMinutes() + 10);
 
     const response = {
-        'event': {
-            'header': {
-                'namespace': 'Alexa.MediaMetadata',
-                'name': 'GetMediaMetadata.Response',
-                'messageId': generateMessageID(),
-                'correlationToken': request.directive.header.correlationToken,
-                'payloadVersion': '3'
+        event: {
+            header: {
+                namespace: 'Alexa.MediaMetadata',
+                name: 'GetMediaMetadata.Response',
+                messageId: generateMessageID(),
+                correlationToken: request.directive.header.correlationToken,
+                payloadVersion: '3'
             },
-            'payload': {
-                'media': [{
-                    'id': request.directive.payload.filters.mediaIds[0],
-                    'cause': 'MOTION_DETECTED',
-                    'recording': {
+            payload: {
+                media: [{
+                    id: request.directive.payload.filters.mediaIds[0],
+                    cause: 'MOTION_DETECTED',
+                    recording: {
                         //'name': 'Optional video name',
                         //'startTime': '2018-06-29T19:20:41Z',
                         //'endTime': '2018-06-29T19:21:41Z',
                         //'videoCodec': 'H264',
                         //'audioCodec': 'NONE',
-                        'uri': {
-                            'value': mediaUri,
-                            'expireTime': tenMinsFromNow.toISOString().split('.')[0]+'Z'
+                        uri: {
+                            value: mediaUri,
+                            expireTime: tenMinsFromNow.toISOString().split('.')[0]+'Z'
                         }
                     }
                 }]

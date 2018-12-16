@@ -32,7 +32,7 @@ You'll need the following setup before starting this project.
 
 1. An [Amazon Developers](https://developer.amazon.com/) account.
 2. An [Amazon AWS](https://aws.amazon.com/) account.
-3. IP camera(s) connected to your LAN that support ONVIF and local recordings.
+3. IP camera(s) connected to your LAN that support streaming over RTSP and local recordings.
 4. A Linux machine connected to your LAN. I used an existing server running Ubuntu 18.04 but a Raspberry Pi, for example, would be fine.
 
 ## Installation Steps
@@ -41,15 +41,19 @@ You'll need the following setup before starting this project.
 
 ### Configure General Settings
 
-Copy config-template.json to config.json. There are several values that need to be changed to suit your setup. Some of them are described below. 
+Copy [config-template.json](./config-template.json) to a file called config.json. There are several values in that file that need to be changed to suit your setup. Some of them are described below. 
 
 ### Setup the Alexa Smart Home Skill and and Lambda handler
 
-The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarthome/steps-to-build-a-smart-home-skill.html) and [Build Smart Home Camera Skills](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html) on the Amazon Alexa Developers site give detailed instructions on how to create the skill and how the API works. Replace the Lambda code in the template example with the code in index.js in [lambda](https://github.com/goruck/alexa-ip-cam/tree/master/lambda) directory of this repo. The code emulates the camera configuration data that would normally come from a 3rd party camera cloud service. You'll have to edit [config.json](https://github.com/goruck/alexa-ip-cam/blob/master/config-template.json) to make it reflect your camera names and specs.
+The [Steps to Build a Smart Home Skill](https://developer.amazon.com/docs/smarthome/steps-to-build-a-smart-home-skill.html) and [Build Smart Home Camera Skills](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html) on the Amazon Alexa Developers site give detailed instructions on how to create the skill and how the API works. Replace the Lambda code in the template example with the code in index.js in [lambda](https://github.com/goruck/alexa-ip-cam/tree/master/lambda) directory of this repo. The code emulates the camera configuration data that would normally come from a 3rd party camera cloud service. You'll have to edit config.json to make it reflect your camera names and specs.
 
 ### Setup the RTSP Proxy
 
-[emtunc's blog](https://emtunc.org/blog/) provides excellent [instructions](https://emtunc.org/blog/02/2016/setting-rtsp-relay-live555-proxy/) on how to setup the proxy from Live555. I needed to set OutPacketBuffer::maxSize to 400000 bytes in live555ProxyServer.cpp to stop the feed from getting truncated. I didn't make the other changes that emtunc made (port and stream naming). The proxy-start script is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
+[emtunc's blog](https://emtunc.org/blog/) provides excellent [instructions](https://emtunc.org/blog/02/2016/setting-rtsp-relay-live555-proxy/) on how to setup the proxy from Live555. I needed to set OutPacketBuffer::maxSize to 400000 bytes in live555ProxyServer.cpp to stop the feed from getting truncated. I didn't make the other changes that emtunc made (port and stream naming). 
+
+The RTSP proxy needs to be on a different port than the individual streams. In my case the proxy port is 8554 since the cameras have their RTSP port set to 554. The proxy is therefore started with ```-p 8554``` on the command line. You have to make sure nothing else is using that port on the server running the proxy. 
+
+The [proxy-start script](./proxy-start.sh) is run as a cronjob as root at boot to start the RTSP proxy. The cronjob is delayed by 60 secs to allow networking to come up first.
 
 ### Setup DNS and SSL certs
 
@@ -59,13 +63,21 @@ Per the Alexa Smart Home camera [documentation](https://developer.amazon.com/doc
 
 ### Setup the TLS encryption proxy
 
-stunnel is a ubuntu package so it easy to install using apt-get as root. The configuration I used is in the file stunnel.conf which is placed in /etc/stunnel/stunnel.conf. stunnel is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
+stunnel is a ubuntu package so it easy to install using apt-get as root. The configuration I used is in the file [stunnel.conf](./stunnel.conf) which is placed in /etc/stunnel/stunnel.conf on my machine. stunnel is run as a cronjob as root at boot to start it. The cronjob is delayed by 60 secs to allow networking to come up first.
 
-### Setup Camera ONVIF
+### Setup Camera
 
-I created an ONVIF user for Alexa access and a profile for each camera. The settings for the profile are shown in the figure below. Note the specific settings for the video encoder - these are the only values that have been tested so you should use the same or be prepared to experiment. 
+I created a user for Alexa access and a streaming profile for each camera. The settings for the profile are shown in the table below. Note the specific settings. These are the only values that have been tested so you should use the same or be prepared to experiment.
 
-![Alt text](/images/onvif-profile.jpg?raw=true "AXIS camera onvif profile for Alexa.")
+| Parameter     | Value         | Units |
+| ------------- |:-------------:| -----:|
+| Resolution    | 1280x720      | pixels|
+| Encoder Type     | H.264      |   NA |
+| Encoder Compression | 30      |    NA |
+| Encoder Max Frame Rate | Unlimited      |    NA |
+| Encoder GOP | 62      |  frames |
+| Encoder Profile | Baseline     |    NA |
+| Encoder Bit Rate Control | Variable      |    NA |
 
 ### Setup Camera Local Recording and Processing
 
@@ -89,7 +101,17 @@ Once everything is setup you need to enable your skill in the Alexa companion mo
 
 ## Results
 
-Overall the skill works well but the latency between asking Alexa to show a camera and the video appearing on the Echo's or FireTV screen is a little too long for a great experience, on average 5 secs or so. I haven't yet tracked down the cause of it. Also I've seen the video re-buffer occasionally which can be irritating and once in a great while the video freezes during rebuffering. Again, I'll track this down and optimize.
+Overall the skill works well but the latency between asking Alexa to show a camera and the video appearing on the Echo's or FireTV screen is a little too long for a great experience, on average 3 secs or so. I haven't yet tracked down the cause of it.
+
+Also I've seen the video re-buffer occasionally which can be irritating and once in a great while the video freezes during rebuffering. I've found that the camera settings above minimize the buffering across all the Amazon Alexa devices I've tested. I think the source of the buffering is the video decode time in the device which varies across device type due to hardware capabilities. Since the the video is delivered to the device from the camera via TCP (stunnel uses SSL over TCP) the network will not let the device discard packets when gets it gets behind in its decoding. I don't know a way to use stunnel with UDP which would obviate this issue. The table below shows the device types I've tested and video quality performance.
+
+| Device     | Buffering Frequency         | Note |
+| ------------- |:-------------:| -----:|
+| Fire TV Cube  | Never      | Expected since the device is optimized for video.|
+| Fire TV Stick 4K  | Never | Expected since the device is optimized for video. |
+| Echo Show Gen 1| Rarely | |
+| Echo Show Gen 2 | Rarely|  |
+| Fire HD 10 Tablet  | Occasionally     | Expected given its hardware capabilities.|
 
 ## Acknowledgments
 
