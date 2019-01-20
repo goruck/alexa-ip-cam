@@ -3,7 +3,7 @@
 /**
  * Check for alarm recordings and send its metadata to Alexa Event Gateway.
  * 
- * Copyright (c) 2018 Lindo St. Angel.
+ * Copyright (c) 2018, 2019 Lindo St. Angel.
  */
 
 const fs = require('fs');
@@ -86,9 +86,9 @@ const httpsPost = (host, path, headers, postData) => {
 
             result.on('end', () => {
                 const response = {
-                    'status': result.statusCode,
-                    'headers': result.headers,
-                    'data': data
+                    status: result.statusCode,
+                    headers: result.headers,
+                    data: data
                 };
 
                 // status = 202 -> LWA success; status = 200 -> auth refresh success
@@ -119,10 +119,10 @@ const httpsPost = (host, path, headers, postData) => {
  */
 const storeToken = token => {
     const data = {
-        'accessToken': token.access_token,
-        'refreshToken': token.refresh_token,
-        'expiresIn': token.expires_in,
-        'datetime': (new Date()).toISOString()
+        accessToken: token.access_token,
+        refreshToken: token.refresh_token,
+        expiresIn: token.expires_in,
+        datetime: (new Date()).toISOString()
     };
 
     return new Promise((resolve, reject) => {
@@ -153,9 +153,9 @@ const storeJSON = (fileName, json) => {
  */
 const checkAccessToken = () => {
     const checkAccessTokenResponse = {
-        'needNewToken': false,
-        'accessToken': null,
-        'refreshToken': null
+        needNewToken: false,
+        accessToken: null,
+        refreshToken: null
     };
 
     const tokens = JSON.parse(fs.readFileSync('./tokens.json'));
@@ -344,7 +344,13 @@ const checkIfMongodbDocExists = (client, collectionName, document) => {
     const collection = client.db().collection(collectionName);
     return new Promise ((resolve, reject) => {
         collection.findOne(document, (err, res) => {
-            err ? reject(`checkIfMongodbDocExists error: ${err}`) : resolve(res !== null);
+            if (err) {
+                reject(`checkIfMongodbDocExists error: ${err}`);
+            } else if (res !== null) {
+                reject('Recording exists.');
+            } else {
+                resolve('Recording does not exist.');
+            }
         });
     });
 };
@@ -388,7 +394,7 @@ const checkForNewRecordings = () => {
 
                 // If stopTime is null a recording is in progress, so skip.
                 if (row.stopTime === null) {
-                    log.info('Recording in progress.');
+                    log.info(`Recording in progress on ${camera.friendlyName}...waiting.`);
                     return;
                 }
             
@@ -429,13 +435,8 @@ const checkForNewRecordings = () => {
                     return checkIfMongodbDocExists(mongodbClient, MONGODB_COLLECTION, doc);
                 }).then(res => {
                     log.debug(`checkIfMongodbDocExists result: ${res}`);
-                    if (res) {
-                        mongodbClient.close();
-                        return Promise.reject('Recording exists.'); // TODO - seems like a hack.
-                    } else {
-                        log.info(`Processing recording ${row.recordingId} from ${camera.friendlyName}.`);
-                        return convertMkvToMp4(mkvName, mp4Name);
-                    }
+                    log.info(`Processing recording ${row.recordingId} from ${camera.friendlyName}.`);
+                    return convertMkvToMp4(mkvName, mp4Name);
                 }).then(res => {
                     log.debug(`convertMkvToMp4 result: ${res}`);
                     return deleteFile(mkvName);
@@ -453,33 +454,33 @@ const checkForNewRecordings = () => {
                     log.debug(`videoUri: ${videoUri}`);
     
                     postData = {
-                        'event': {
-                            'header': {
-                                'namespace': 'Alexa.MediaMetadata',
-                                'name': 'MediaCreatedOrUpdated',
-                                'messageId': msgID,
-                                'payloadVersion': '3'
+                        event: {
+                            header: {
+                                namespace: 'Alexa.MediaMetadata',
+                                name: 'MediaCreatedOrUpdated',
+                                messageId: msgID,
+                                payloadVersion: '3'
                             },
-                            'endpoint': {
-                                'scope': {
-                                    'type': 'BearerToken',
-                                    'token': accessToken
+                            endpoint: {
+                                scope: {
+                                    type: 'BearerToken',
+                                    token: accessToken
                                 },
-                                'endpointId': camera.endpointId
+                                endpointId: camera.endpointId
                             },
-                            'payload': {
-                                'media': {
-                                    'id': mediaId,
-                                    'cause': 'MOTION_DETECTED',
-                                    'recording': {
-                                        'name': camera.friendlyName,
-                                        'startTime': row.startTime.split('.')[0]+'Z',
-                                        'endTime': row.stopTime.split('.')[0]+'Z',
-                                        'videoCodec': 'H264',
-                                        'audioCodec': 'NONE',
-                                        'uri': {
-                                            'value': videoUri,
-                                            'expireTime': tenMinsFromNow.toISOString().split('.')[0]+'Z'
+                            payload: {
+                                media: {
+                                    id: mediaId,
+                                    cause: 'MOTION_DETECTED',
+                                    recording: {
+                                        name: camera.friendlyName,
+                                        startTime: row.startTime.split('.')[0]+'Z',
+                                        endTime: row.stopTime.split('.')[0]+'Z',
+                                        videoCodec: 'H264',
+                                        audioCodec: 'NONE',
+                                        uri: {
+                                            value: videoUri,
+                                            expireTime: tenMinsFromNow.toISOString().split('.')[0]+'Z'
                                         }
                                     }
                                 }
@@ -497,7 +498,7 @@ const checkForNewRecordings = () => {
                     log.debug(`storeJSON result: ${res}`);
     
                     const alexaHeaders = {
-                        'Authorization': 'Bearer ' + accessToken,
+                        Authorization: 'Bearer ' + accessToken,
                         'Content-Type': 'application/json;charset=UTF-8'
                     };
     
@@ -508,11 +509,11 @@ const checkForNewRecordings = () => {
 
                     const uploadTimeStamp = new Date();
                     const mongodbDoc = {
-                        'recordingId': row.recordingId,
-                        'recordingStartTime': row.startTime,
-                        'recordingStopTime': row.stopTime,
-                        'recordingPath': baseRecordingPath,
-                        'recordingUploadTime': uploadTimeStamp.toISOString()
+                        recordingId: row.recordingId,
+                        recordingStartTime: row.startTime,
+                        recordingStopTime: row.stopTime,
+                        recordingPath: baseRecordingPath,
+                        recordingUploadTime: uploadTimeStamp.toISOString()
                     };
                     return insertDocMongodb(mongodbClient, MONGODB_COLLECTION, mongodbDoc);
                 }).then(res => {
@@ -521,13 +522,12 @@ const checkForNewRecordings = () => {
                     recordingsUploaded++;
                     if (recordingsUploaded > numOfRecordings) db.close();
                 }).catch(err => {
-                    if (err === 'Recording exists.') log.debug(err);
-                    else log.error(`Gateway POST error: ${util.inspect(err, {showHidden: false, depth: null})}`);
+                    log.debug(`Gateway POST error: ${util.inspect(err, {showHidden: false, depth: null})}`);
                 });
             });
         });
     });
 };
 
-// Start checking for new recordings. 
+// Start checking for new recordings.
 setInterval(checkForNewRecordings, CHECK_RECORDINGS_INTERVAL);
