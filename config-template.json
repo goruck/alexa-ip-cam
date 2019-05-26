@@ -25,75 +25,117 @@
         "checkRecordingsInterval": 5000
     },
     "cameras":[
-        {
-          "endpointId": "1",
-          "manufacturerName": "Axis",
-          "manufacturerId": "axis-ACCC8E5E7513",
-          "modelName": "P1425-LE",
-          "friendlyName": "Front Porch Camera",
-          "description": "Front Porch Camera",
-          "resolutions": [{"width":1920, "height":1080}],
-          "uri": "rtsp://cam.lsacam.com:443/proxyStream-1"
-        },
-        {
-          "endpointId": "2",
-          "manufacturerName": "Axis",
-          "manufacturerId": "",
-          "modelName": "P1425-LE",
-          "friendlyName": "East Side Camera",
-          "description": "East Side Camera",
-          "resolutions": [{"width":1080, "height":1920}],
-          "uri": "rtsp://cam.lsacam.com:443/proxyStream-2"
-        },
-        {
-          "endpointId": "3",
-          "manufacturerName": "Axis",
-          "manufacturerId": "",
-          "modelName": "P1435-LE",
-          "friendlyName": "Back Yard Camera",
-          "description": "Back Yard Camera",
-          "resolutions": [{"width":1920, "height":1080}],
-          "uri": "rtsp://cam.lsacam.com:443/proxyStream-3"
-        },
-        {
-          "endpointId": "4",
-          "manufacturerName": "Axis",
-          "manufacturerId": "",
-          "modelName": "P1425-LE",
-          "friendlyName": "Back Garage Camera",
-          "description": "Back Garage Camera",
-          "resolutions": [{"width":1920, "height":1080}],
-          "uri": "rtsp://cam.lsacam.com:443/proxyStream-4"
-        },
-        {
-          "endpointId": "5",
-          "manufacturerName": "Axis",
-          "manufacturerId": "axis-ACCC8E6E3530",
-          "modelName": "P1425-LE",
-          "friendlyName": "Playroom Door Camera",
-          "description": "Playroom Door Camera",
-          "resolutions": [{"width":1920, "height":1080}],
-          "uri": "rtsp://cam.lsacam.com:443/proxyStream-5"
-        },
-        {
-          "endpointId": "6",
-          "manufacturerName": "Axis",
-          "manufacturerId": "",
-          "modelName": "P1425-LE",
-          "friendlyName": "Front Gate Camera",
-          "description": "Front Gate Camera",
-          "resolutions": [{"width":1080, "height":1920}],
-          "uri": "rtsp://cam.lsacam.com:443/proxyStream-6"
-        },
-        {
-          "endpointId": "7",
-          "manufacturerName": "Axis",
-          "manufacturerId": "",
-          "modelName": "P1435-LE",
-          "friendlyName": "Back Porch Camera",
-          "description": "Back Porch Camera",
-          "resolutions": [{"width":666, "height":375}],
-          "uri": "rtsp://cam.lsacam.com:443/proxyStream-7"
-        }
-    ]
+      {
+        "endpointId": "1",
+        "manufacturerName": "Axis",
+        "manufacturerId": "axis-ACCC8E5E7513",
+        "modelName": "P1425-LE",
+        "friendlyName": "Front Porch Camera",
+        "description": "Front Porch Camera",
+        "resolutions": [
+          {"width": 1280, "height": 720}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["NONE"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-1"
+      },
+      {
+        "endpointId": "2",
+        "manufacturerName": "Axis",
+        "manufacturerId": "",
+        "modelName": "P1425-LE",
+        "friendlyName": "East Side Camera",
+        "description": "East Side Camera",
+        "resolutions": [
+          {"width": 720,  "height": 1280}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["NONE"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-2"
+      },
+      {
+        "endpointId": "3",
+        "manufacturerName": "Axis",
+        "manufacturerId": "",
+        "modelName": "P1435-LE",
+        "friendlyName": "Back Yard Camera",
+        "description": "Back Yard Camera",
+        "resolutions": [
+          {"width": 1280, "height": 720}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["NONE"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-3"
+      },
+      {
+        "endpointId": "4",
+        "manufacturerName": "Axis",
+        "manufacturerId": "",
+        "modelName": "P1425-LE",
+        "friendlyName": "Back Garage Camera",
+        "description": "Back Garage Camera",
+        "resolutions": [
+          {"width": 1280, "height": 720}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["NONE"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-4"
+      },
+      {
+        "endpointId": "5",
+        "manufacturerName": "Axis",
+        "manufacturerId": "axis-ACCC8E6E3530",
+        "modelName": "P1425-LE",
+        "friendlyName": "Playroom Door Camera",
+        "description": "Playroom Door Camera",
+        "resolutions": [
+          {"width": 1280, "height": 720}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["NONE"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-5"
+      },
+      {
+        "endpointId": "6",
+        "manufacturerName": "Axis",
+        "manufacturerId": "",
+        "modelName": "P1425-LE",
+        "friendlyName": "Front Gate Camera",
+        "description": "Front Gate Camera",
+        "resolutions": [
+          {"width": 720,  "height": 1280}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["NONE"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-6"
+      },
+      {
+        "endpointId": "7",
+        "manufacturerName": "Axis",
+        "manufacturerId": "",
+        "modelName": "P1435-LE",
+        "friendlyName": "Back Porch Camera",
+        "description": "Back Porch Camera",
+        "resolutions": [
+          {"width": 1280, "height": 720}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["NONE"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-7"
+      },
+      {
+        "endpointId": "8",
+        "manufacturerName": "Wyze",
+        "manufacturerId": "",
+        "modelName": "Wyze Cam v2",
+        "friendlyName": "Crawl Space Camera",
+        "description": "Crawl Space Camera",
+        "resolutions": [
+          {"width": 1280, "height": 720}
+        ],
+        "videoCodecs": ["H264"],
+        "audioCodecs": ["G711"],
+        "uri": "rtsp://cam.lsacam.com:443/proxyStream-8"
+      }
+  ]
 }

@@ -150,19 +150,13 @@ function handleDiscovery(request, callback) {
     const camerasObj = getDevicesFromPartnerCloud();
 
     let endpoints = [];
-    for (let i = 0, len = camerasObj.cameras.length; i < len; i++) {
-        let _resolutions = [];
-        for (let j = 0, len = camerasObj.cameras[i].resolutions.length; j < len; j++) {
-            _resolutions.push({'width': camerasObj.cameras[i].resolutions[j].width,
-                'height': camerasObj.cameras[i].resolutions[j].height});
-        }
-
+    camerasObj.cameras.forEach(camera => {
         const endpoint = {
-            endpointId: camerasObj.cameras[i].endpointId,
-            manufacturerName: camerasObj.cameras[i].manufacturerName,
-            modelName: camerasObj.cameras[i].modelName,
-            friendlyName: camerasObj.cameras[i].friendlyName,
-            description: camerasObj.cameras[i].description,
+            endpointId: camera.endpointId,
+            manufacturerName: camera.manufacturerName,
+            modelName: camera.modelName,
+            friendlyName: camera.friendlyName,
+            description: camera.description,
             displayCategories: ['CAMERA'],
             cookie: {},
             capabilities: [
@@ -173,10 +167,10 @@ function handleDiscovery(request, callback) {
                     cameraStreamConfigurations: [
                         {
                             protocols: ['RTSP'], 
-                            resolutions: _resolutions,
+                            resolutions: camera.resolutions,
                             authorizationTypes: ['NONE'], 
-                            videoCodecs: ['H264'],
-                            audioCodecs: ['NONE'] 
+                            videoCodecs: camera.videoCodecs,
+                            audioCodecs: camera.audioCodecs
                         }]
                 },
                 {
@@ -188,7 +182,7 @@ function handleDiscovery(request, callback) {
             ]
         };
         endpoints.push(endpoint);
-    }
+    });
 
     const response = {
         'event': {header, 'payload': {endpoints}}
@@ -268,14 +262,13 @@ function handleControl(request, callback) {
      * Form and send response event.
      *
      */
-    const correlation_Token = request.directive.header.correlationToken;
+    const correlationToken = request.directive.header.correlationToken;
 
     // TODO: handle multiple camera streams
-    const _width = request.directive.payload.cameraStreams[0].resolution.width;
-    const _height = request.directive.payload.cameraStreams[0].resolution.height;
+    const cameraStream = request.directive.payload.cameraStreams[0];
     
     const header = {
-        correlationToken: correlation_Token,
+        correlationToken: correlationToken,
         messageId: generateMessageID(),
         name: 'Response',
         namespace: 'Alexa.CameraStreamController',
@@ -285,17 +278,17 @@ function handleControl(request, callback) {
     // Get uri of camera using applianceId as an index. 
     const camerasObj = getDevicesFromPartnerCloud();
     const cameraIdx = parseInt(applianceId) - 1;
-    const _uri = camerasObj.cameras[cameraIdx].uri;
+    const uri = camerasObj.cameras[cameraIdx].uri;
     
     const payload = {
         cameraStreams: [
             {
-                uri: _uri,
+                uri: uri,
                 protocol: 'RTSP',
-                resolution: {width: _width, height: _height},
+                resolution: cameraStream.resolution,
                 authorizationType: 'NONE',
-                videoCodec: 'H264',
-                audioCodec: 'NONE'
+                videoCodec: cameraStream.videoCodec,
+                audioCodec: cameraStream.audioCodec
             }]
     };
 
