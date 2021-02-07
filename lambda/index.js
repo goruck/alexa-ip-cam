@@ -361,13 +361,17 @@ function handleMediaMetadata (request, callback) {
                 payloadVersion: '3'
             },
             payload: {
+                scope: {
+                    type: 'BearerToken',
+                    token: request.directive.payload.scope.token
+                },
                 media: [{
                     id: request.directive.payload.filters.mediaIds[0],
                     cause: 'MOTION_DETECTED',
                     recording: {
                         //'name': 'Optional video name',
-                        //'startTime': '2018-06-29T19:20:41Z',
-                        //'endTime': '2018-06-29T19:21:41Z',
+                        startTime: '2018-06-29T19:20:41Z', // placeholder for now
+                        endTime: '2018-06-29T19:21:41Z', // placeholder for now
                         //'videoCodec': 'H264',
                         //'audioCodec': 'NONE',
                         uri: {
