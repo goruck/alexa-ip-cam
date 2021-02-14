@@ -3,7 +3,7 @@
 /**
  * Check for alarm recordings and send its metadata to Alexa Event Gateway.
  * 
- * Copyright (c) 2018, 2019 Lindo St. Angel.
+ * Copyright (c) 2018 ~ 2021 Lindo St. Angel.
  */
 
 const fs = require('fs');
@@ -359,8 +359,10 @@ const checkIfMongodbDocExists = (client, collectionName, document) => {
  * Main function to check for new recordings.
  * Much of this code is specific to AXIS cameras.
  * AXIS cameras store recordings as .mkv files and use a sqlite db to track. 
+ * 
+ * @param {object} mongodbClient
  */
-const checkForNewRecordings = () => {
+const checkForNewRecordings = mongodbClient => {
     CAMERAS.forEach(camera => {
         log.debug(`Checking for new recordings on camera ${camera.friendlyName}.`);
 
@@ -382,8 +384,8 @@ const checkForNewRecordings = () => {
                 log.debug('No database records found.');
                 return;
             }
-			
-            const numOfRecordings = rows.length;			
+
+            const numOfRecordings = rows.length;
             let recordingsUploaded = 0;
 
             // Each row is a recording.
@@ -415,7 +417,6 @@ const checkForNewRecordings = () => {
                 const mediaId = manufacturerIdArr[0]+'__'+manufacturerIdArr[1]+'__'+pathArr[0]+'__'
                     +pathArr[1]+'__'+row.recordingFileName+'__'+row.blockPath+'__'+row.blockFileName;
 
-                let mongodbClient = {};
                 let accessToken = '';
                 let postData = '';
 
@@ -429,11 +430,8 @@ const checkForNewRecordings = () => {
                 // NB: It would have been cleaner to add an upload record to the AXIS sqlite db
                 //     instead of using a separate mongodb database.
                 //     But I could not get that to work. Looks like AXIS guards against mods to the db.
-                openMongodb(MONGODB_URL).then(res => {
-                    mongodbClient = res;
-                    const doc = {'recordingPath': baseRecordingPath};
-                    return checkIfMongodbDocExists(mongodbClient, MONGODB_COLLECTION, doc);
-                }).then(res => {
+                const doc = {'recordingPath': baseRecordingPath};
+                checkIfMongodbDocExists(mongodbClient, MONGODB_COLLECTION, doc).then(res => {
                     log.debug(`checkIfMongodbDocExists result: ${res}`);
                     log.info(`Processing recording ${row.recordingId} from ${camera.friendlyName}.`);
                     return convertMkvToMp4(mkvName, mp4Name);
@@ -518,7 +516,6 @@ const checkForNewRecordings = () => {
                     return insertDocMongodb(mongodbClient, MONGODB_COLLECTION, mongodbDoc);
                 }).then(res => {
                     log.debug(`mongodb res ${res}`);
-                    mongodbClient.close();
                     recordingsUploaded++;
                     if (recordingsUploaded > numOfRecordings) db.close();
                 }).catch(err => {
@@ -529,5 +526,26 @@ const checkForNewRecordings = () => {
     });
 };
 
-// Start checking for new recordings.
-setInterval(checkForNewRecordings, CHECK_RECORDINGS_INTERVAL);
+// Open database to track new recordings and start checking for them.
+mongoClient.connect(MONGODB_URL, (err, client) => {
+    if (err) {
+        log.debug(`Error opening mongodb database: ${err}`);
+    } else {
+        log.debug('monogdb database successfully opened.');
+        setInterval(checkForNewRecordings, CHECK_RECORDINGS_INTERVAL, client);
+    }
+
+    const mongoClientClose = () => {
+        client.close(false, err =>{
+            if (err) {
+                log.debug(`Error closing mongodb database: ${err}`);
+            } else {
+                log.debug('monogdb database successfully closed.');
+            }
+            process.exit();
+        });
+    };
+
+    process.on('SIGINT', mongoClientClose); // Ctrl-C
+    process.on('SIGTERM', mongoClientClose); // termination
+});
