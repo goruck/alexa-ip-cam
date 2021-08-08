@@ -4,6 +4,7 @@
   "description": "Discover and show cameras on a local network without a cloud service.",
   "main": "index.js",
   "dependencies": {
+    "npm": "^7.20.5",
     "uuid": "^3.1.0"
   },
   "devDependencies": {},
