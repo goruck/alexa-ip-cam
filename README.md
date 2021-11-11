@@ -1,4 +1,4 @@
-*NEW - Now using the Alexa Cameras Recap API allowing for stored recordings to be viewed.*
+***IMPORTANT NOTE: Some Amazon devices may not work with this project because they don't properly manage the recent Let's Encrypt root certification expiration. I am working with Amazon to fix things on their side but in the meantime the steps described below should work with the majority of Amazon devices.***
 
 # alexa-ip-cam
 
@@ -58,6 +58,14 @@ The [proxy-start script](./proxy-start.sh) is run as a cronjob as root at boot t
 ### Setup DNS and SSL certs
 
 I followed the corresponding steps in [CameraPi](https://github.com/sammachin/camerapi) almost exactly except I'm using GoDaddy to manage domains and DNS instead of AWS Route 53. Note: Let’s Encrypt CA issues short-lived certificates (90 days). Make sure you [renew the certificates](https://certbot.eff.org/docs/using.html#renewing-certificates) at least once in 3 months.
+
+At the current time you should configure your ACME client to use the *alternative chain* instead of the *default chain* when requesting a cert from Let's Encrypt because this allows most Amazon devices to properly handle Let's Encrypt's recent root cert expiration. For more information on this issue please see [Old Let’s Encrypt Root Certificate Expiration and OpenSSL 1.0.2](https://www.openssl.org/blog/blog/2021/09/13/LetsEncryptRootCertExpire/). I use [certbot](https://certbot.eff.org/) as an ACME client and the command to do so is shown below.
+
+```bash
+$ sudo certbot -d URI --rsa-key-size 4096 --manual \
+--preferred-challenges dns \
+--preferred-chain "ISRG Root X1" certonly
+```
 
 Per the Alexa Smart Home camera [documentation](https://developer.amazon.com/docs/smarthome/build-smart-home-camera-skills.html#local-and-remote-execution-recommendations) you can provide the API a local or remote camera URI. I'm currently providing a local URI but did try remote as well since I was a little concerned about putting a private IP address in a DNS record. But local results in lower latency over remote but its not a lot, only about 500 ms and I didn't have to open a port to the Internet in my firewall. The biggest drawback is that I won't be able to view my cameras on an Echo device outside my home, for example at work. 
 
