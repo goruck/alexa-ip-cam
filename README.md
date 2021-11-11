@@ -1,4 +1,4 @@
-***IMPORTANT NOTE: At the current time, Some Amazon devices may not work with this project because they don't properly manage the recent Let's Encrypt root certification expiration. I am working with Amazon to fix things on their side but in the meantime the steps described below should work with the majority of Amazon devices.***
+***IMPORTANT NOTE: At the current time some Amazon devices may not work with this project because they don't properly manage the recent Let's Encrypt root certification expiration. I am working with Amazon to fix things on their side but in the meantime the steps described below should work with the majority of Amazon devices.***
 
 # alexa-ip-cam
 
