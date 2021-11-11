@@ -1,10 +1,11 @@
 {
   "name": "process-events",
   "version": "1.0.0",
-  "description": "Check for alarm recordings from Axis cameras and send thier metadata to Alexa Event Gateway.",
+  "description": "Check for alarm recordings from Axis cameras and send their metadata to Alexa Event Gateway.",
   "main": "process-events.js",
   "dependencies": {
     "mongodb": "^3.3.0",
+    "npm": "^7.22.0",
     "sqlite3": "^4.1.0",
     "util": "^0.11.1",
     "uuidv4": "^1.0.1",
