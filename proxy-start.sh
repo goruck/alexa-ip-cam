@@ -15,5 +15,4 @@
   "rtsp://$CAM_4/axis-media/media.amp?streamprofile=alexa-ip-cam" \
   "rtsp://$CAM_5/axis-media/media.amp?streamprofile=alexa-ip-cam" \
   "rtsp://$CAM_6/axis-media/media.amp?streamprofile=alexa-ip-cam" \
-  "rtsp://$CAM_3/axis-media/media.amp?streamprofile=alexa-ip-cam&camera=1" \
-  "rtsp://$CAM_7/live"
+  "rtsp://$CAM_3/axis-media/media.amp?streamprofile=alexa-ip-cam&camera=1"
