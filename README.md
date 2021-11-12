@@ -62,6 +62,8 @@ I followed the corresponding steps in [CameraPi](https://github.com/sammachin/ca
 At the current time you should configure your ACME client to use the *alternative chain* instead of the *default chain* when requesting a cert from Let's Encrypt because this allows most Amazon devices to properly handle Let's Encrypt's recent root cert expiration. For more information on this issue please see [Old Let’s Encrypt Root Certificate Expiration and OpenSSL 1.0.2](https://www.openssl.org/blog/blog/2021/09/13/LetsEncryptRootCertExpire/). I use [certbot](https://certbot.eff.org/) as an ACME client and the command to do so is shown below.
 
 ```bash
+$ certbot --version
+certbot 1.21.0
 $ sudo certbot -d URI --rsa-key-size 4096 --manual \
 --preferred-challenges dns \
 --preferred-chain "ISRG Root X1" certonly
